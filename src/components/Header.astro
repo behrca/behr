@@ -46,7 +46,7 @@ import { SITE_TITLE } from '../consts';
 	header {
 		margin: 0;
 		padding: 0 1em;
-		background: white;
+		background: var(--page-bg);
 		box-shadow: 0 2px 8px rgba(var(--black), 5%);
 	}
 	h2 {
@@ -55,9 +55,13 @@ import { SITE_TITLE } from '../consts';
 	}
 
 	h2 a,
-	h2 a.active {
-		text-decoration: none;
-	}
+h2 a.active {
+	text-decoration: none;
+	font-family: 'Portland', sans-serif;
+	font-weight: 100;
+	text-transform: uppercase;
+	letter-spacing: 0.25em;
+}
 	nav {
 		display: flex;
 		align-items: center;

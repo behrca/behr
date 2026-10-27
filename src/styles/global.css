@@ -153,3 +153,18 @@ hr {
 	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
 	white-space: nowrap;
 }
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--accent: #7c8cff;
+		--accent-dark: #a9b4ff;
+		--black: 240, 242, 248;
+		--gray: 160, 172, 200;
+		--gray-light: 45, 52, 68;
+		--gray-dark: 220, 225, 235;
+		--gray-gradient: rgba(var(--gray-light), 50%), #12151c;
+	}
+	body {
+		background-color: #12151c;
+	}
+}
