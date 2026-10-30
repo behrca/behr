@@ -7,6 +7,7 @@
 :root {
 	--accent: #2337ff;
 	--accent-dark: #000d8a;
+	--page-bg: #fff;
 	--black: 15, 18, 25;
 	--gray: 96, 115, 159;
 	--gray-light: 229, 233, 240;
@@ -26,6 +27,13 @@
 @font-face {
 	font-family: "Atkinson";
 	src: url("/fonts/atkinson-bold.woff") format("woff");
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Portland';
+	src: url('/fonts/Portland_Bold.ttf') format('truetype');
 	font-weight: 700;
 	font-style: normal;
 	font-display: swap;
@@ -158,6 +166,7 @@ hr {
 	:root {
 		--accent: #7c8cff;
 		--accent-dark: #a9b4ff;
+		 --page-bg: #12151c;
 		--black: 240, 242, 248;
 		--gray: 160, 172, 200;
 		--gray-light: 45, 52, 68;
