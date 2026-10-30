@@ -5,7 +5,11 @@ import { SITE_TITLE } from '../consts';
 
 <header>
 	<nav>
-		<h2><a href="/">{SITE_TITLE}</a></h2>
+		   <a href="/" class="brand">
+     <img src="/favicon-96x96.png" alt="Logo" width="32" height="32" />
+     <span class="divider">|</span>
+     <span>{SITE_TITLE}</span>
+   </a>
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
 			<HeaderLink href="/blog">Blog</HeaderLink>
