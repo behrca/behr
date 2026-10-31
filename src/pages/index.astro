@@ -14,15 +14,52 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		<Header />
 		<main>
 			<section class="hero">
-				<p class="eyebrow">Photography by Behr Carey</p>
-				<h1>Capturing<br />Life’s <em>Beauty</em></h1>
-				<p class="tagline">Nature. Aviation. More.</p>
-				<a class="button" href="/blog">View my work →</a>
+				<div class="backgrounds">
+					<div class="bg active" style="background-image: url('/hero.jpg')"></div>
+					<div class="bg" style="background-image: url('/hero-2.jpg')"></div>
+					<div class="bg" style="background-image: url('/hero-3.jpg')"></div>
+					<div class="bg" style="background-image: url('/hero-4.jpg')"></div>
+				</div>
+				<div class="overlay"></div>
+
+				<div class="content">
+					<p class="eyebrow">Photography by Behr Carey</p>
+					<h1>
+						Capturing<br />Life’s
+						<span class="words">
+							<em class="word active">Beauty</em>
+							<em class="word">Breath</em>
+							<em class="word">Work</em>
+							<em class="word">Journeys</em>
+						</span>
+					</h1>
+					<p class="tagline">Nature. Aviation. More.</p>
+					<a class="button" href="/blog">View my work →</a>
+				</div>
 			</section>
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<script>
+	const bgs = document.querySelectorAll('.bg');
+	const words = document.querySelectorAll('.word');
+	const SECONDS_PER_SLIDE = 6;
+	let current = 0;
+
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (!reduceMotion) {
+		setInterval(() => {
+			bgs[current].classList.remove('active');
+			words[current].classList.remove('active');
+			current = (current + 1) % bgs.length;
+			bgs[current].classList.add('active');
+			words[current].classList.add('active');
+		}, SECONDS_PER_SLIDE * 1000);
+	}
+</script>
 
 <style>
 	main {
@@ -31,18 +68,35 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		padding: 0;
 	}
 	.hero {
+		position: relative;
 		min-height: 90vh;
 		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: flex-start;
-		padding: 2rem 6vw;
+		align-items: center;
+		overflow: hidden;
 		color: white;
-		background-image:
-			linear-gradient(to right, rgba(10, 14, 25, 0.85), rgba(10, 14, 25, 0.15)),
-			url('/hero.jpg');
+	}
+	.backgrounds,
+	.overlay {
+		position: absolute;
+		inset: 0;
+	}
+	.bg {
+		position: absolute;
+		inset: 0;
 		background-size: cover;
 		background-position: center;
+		opacity: 0;
+		transition: opacity 1.5s ease-in-out;
+	}
+	.bg.active {
+		opacity: 1;
+	}
+	.overlay {
+		background: linear-gradient(to right, rgba(10, 14, 25, 0.85), rgba(10, 14, 25, 0.15));
+	}
+	.content {
+		position: relative;
+		padding: 2rem 6vw;
 	}
 	.eyebrow {
 		letter-spacing: 0.3em;
@@ -56,14 +110,24 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		margin: 0 0 1.5rem;
 		color: white;
 	}
-	h1 em {
+	.words {
+		display: inline-grid;
+	}
+	.word {
+		grid-area: 1 / 1;
 		color: #6fa0e8;
+		opacity: 0;
+		transition: opacity 1.5s ease-in-out;
+	}
+	.word.active {
+		opacity: 1;
 	}
 	.tagline {
 		letter-spacing: 0.15em;
 		margin: 0 0 2rem;
 	}
 	.button {
+		display: inline-block;
 		border: 2px solid white;
 		color: white;
 		padding: 0.9rem 1.6rem;
