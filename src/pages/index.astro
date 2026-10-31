@@ -13,7 +13,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 	<body>
 		<Header />
 		<main>
-			<section class="hero">
+			<div class="page-bg">
 				<div class="backgrounds">
 					<div class="bg active" style="background-image: url('/hero.jpg')"></div>
 					<div class="bg" style="background-image: url('/hero-2.jpg')"></div>
@@ -21,7 +21,10 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 					<div class="bg" style="background-image: url('/hero-4.jpg')"></div>
 				</div>
 				<div class="overlay"></div>
+				<div class="fade"></div>
+			</div>
 
+			<section class="hero">
 				<div class="content">
 					<p class="eyebrow">Photography by Behr Carey</p>
 					<h1>
@@ -34,46 +37,78 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 						</span>
 					</h1>
 					<p class="tagline">Nature. Aviation. More.</p>
-					<a class="button" href="/blog">View my work →</a>
+					<a class="button" href="/blog">
+						<span class="label">View my work</span>
+						<span class="arrow" aria-hidden="true">→</span>
+					</a>
 				</div>
+
+				<a class="scroll-cue" href="#work" aria-label="Scroll down to my work">
+					<svg
+						viewBox="0 0 24 24"
+						width="18"
+						height="18"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<line x1="12" y1="4" x2="12" y2="20"></line>
+						<polyline points="6 14 12 20 18 14"></polyline>
+					</svg>
+				</a>
 			</section>
 
-			<section class="disciplines">
+			<section class="disciplines" id="work">
 				<div class="section-header">
-					<p class="section-eyebrow">Specialty</p>
-					<h2 class="section-title">What I Shoot</h2>
+					<div>
+						<p class="section-eyebrow">Specialty</p>
+						<h2 class="section-title">Explore My Work</h2>
+					</div>
+					<a class="view-all" href="/blog">View all →</a>
 				</div>
 
 				<div class="cards">
-					<div class="card">
-						<div class="card-bg" style="background-image: url('/hero.jpg')"></div>
+					<a class="card" href="/blog">
+						<div class="card-bg" style="background-image: url('/nature.jpg')"></div>
 						<div class="card-shade"></div>
 						<div class="card-body">
 							<h3>Nature</h3>
 							<p>Rivers, mountains, and big open country. The quiet, wild side of the outdoors.</p>
-							<a class="card-button" href="/blog">View Nature →</a>
+							<span class="card-button">
+								<span class="label">View Nature</span>
+								<span class="arrow" aria-hidden="true">→</span>
+							</span>
 						</div>
-					</div>
+					</a>
 
-					<div class="card">
-						<div class="card-bg" style="background-image: url('/hero-3.jpg')"></div>
+					<a class="card" href="/blog">
+						<div class="card-bg" style="background-image: url('/aviation.jpg')"></div>
 						<div class="card-shade"></div>
 						<div class="card-body">
 							<h3>Aviation</h3>
 							<p>Helicopters, airliners, and everything that flies, caught where they work.</p>
-							<a class="card-button" href="/blog">View Aviation →</a>
+							<span class="card-button">
+								<span class="label">View Aviation</span>
+								<span class="arrow" aria-hidden="true">→</span>
+							</span>
 						</div>
-					</div>
+					</a>
 
-					<div class="card">
-						<div class="card-bg" style="background-image: url('/hero-2.jpg')"></div>
+					<a class="card" href="/blog">
+						<div class="card-bg" style="background-image: url('/wildlife.jpg')"></div>
 						<div class="card-shade"></div>
 						<div class="card-body">
 							<h3>Wildlife</h3>
 							<p>Whales, birds, and the moments that only last a second.</p>
-							<a class="card-button" href="/blog">View Wildlife →</a>
+							<span class="card-button">
+								<span class="label">View Wildlife</span>
+								<span class="arrow" aria-hidden="true">→</span>
+							</span>
 						</div>
-					</div>
+					</a>
 				</div>
 			</section>
 		</main>
@@ -101,21 +136,33 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 </script>
 
 <style>
+	@media (prefers-reduced-motion: no-preference) {
+		:global(html) {
+			scroll-behavior: smooth;
+		}
+	}
+
 	main {
+		position: relative;
 		width: 100%;
 		max-width: 100%;
 		padding: 0;
-	}
-	.hero {
-		position: relative;
-		min-height: 100vh;
-		display: flex;
-		align-items: center;
 		overflow: hidden;
-		color: white;
+		background: #0a0e19;
+	}
+
+	/* Photo layer: scrolls with the page, fades to dark going down */
+	.page-bg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 150vh;
+		z-index: 0;
 	}
 	.backgrounds,
-	.overlay {
+	.overlay,
+	.fade {
 		position: absolute;
 		inset: 0;
 	}
@@ -123,7 +170,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		position: absolute;
 		inset: 0;
 		background-size: cover;
-		background-position: center;
+		background-position: center top;
 		opacity: 0;
 		transition: opacity 1.5s ease-in-out;
 	}
@@ -131,7 +178,25 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		opacity: 1;
 	}
 	.overlay {
-		background: linear-gradient(to right, rgba(10, 14, 25, 0.85), rgba(10, 14, 25, 0.15));
+		background: linear-gradient(to right, rgba(10, 14, 25, 0.55), rgba(10, 14, 25, 0));
+	}
+	.fade {
+		background: linear-gradient(
+			to bottom,
+			rgba(10, 14, 25, 0) 0%,
+			rgba(10, 14, 25, 0.05) 30%,
+			rgba(10, 14, 25, 0.6) 65%,
+			#0a0e19 100%
+		);
+	}
+
+	.hero {
+		position: relative;
+		z-index: 1;
+		min-height: 100vh;
+		display: flex;
+		align-items: center;
+		color: white;
 	}
 	.content {
 		position: relative;
@@ -149,6 +214,8 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		margin: 0 0 1.5rem;
 		color: white;
 	}
+
+	/* Changing word: focus pull, timed to match the photo crossfade (1.5s, same easing) */
 	.words {
 		display: inline-grid;
 	}
@@ -156,17 +223,35 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		grid-area: 1 / 1;
 		color: #6fa0e8;
 		opacity: 0;
-		transition: opacity 1.5s ease-in-out;
+		filter: blur(10px);
+		transition:
+			opacity 1.5s ease-in-out,
+			filter 1.5s ease-in-out;
 	}
 	.word.active {
 		opacity: 1;
+		filter: blur(0);
 	}
+	@media (prefers-reduced-motion: reduce) {
+		.word {
+			transition: none;
+			filter: none;
+		}
+	}
+
 	.tagline {
 		letter-spacing: 0.15em;
 		margin: 0 0 2rem;
 	}
+
+	/* View my work button: white fill sweeps in from the left on hover */
 	.button {
-		display: inline-block;
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
 		border: 2px solid white;
 		color: white;
 		padding: 0.9rem 1.6rem;
@@ -174,18 +259,93 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		text-transform: uppercase;
 		font-size: 0.8rem;
 		text-decoration: none;
+		transition: color 0.35s ease;
 	}
-	.button:hover {
+	.button::before {
+		content: '';
+		position: absolute;
+		inset: 0;
 		background: white;
-		color: black;
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+		z-index: -1;
+	}
+	.button .arrow {
+		display: inline-block;
+		transition: transform 0.35s ease;
+	}
+	.button:hover,
+	.button:focus-visible {
+		color: #0a0e19;
+	}
+	.button:hover::before,
+	.button:focus-visible::before {
+		transform: scaleX(1);
+	}
+	.button:hover .arrow,
+	.button:focus-visible .arrow {
+		transform: translateX(5px);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.button,
+		.button::before,
+		.button .arrow {
+			transition: none;
+		}
+	}
+
+	/* Scroll cue: outlined pill with a gently bobbing arrow */
+	.scroll-cue {
+		position: absolute;
+		bottom: 2.5rem;
+		left: 50%;
+		transform: translateX(-50%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 54px;
+		box-sizing: border-box;
+		border: 2px solid rgba(255, 255, 255, 0.85);
+		border-radius: 999px;
+		color: white;
+		text-decoration: none;
+		transition: background 0.3s ease;
+	}
+	.scroll-cue:hover {
+		background: rgba(255, 255, 255, 0.15);
+	}
+	.scroll-cue svg {
+		animation: cue-bob 2.5s ease-in-out infinite;
+	}
+	@keyframes cue-bob {
+		0%,
+		100% {
+			transform: translateY(-2px);
+		}
+		50% {
+			transform: translateY(4px);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.scroll-cue svg {
+			animation: none;
+		}
 	}
 
 	/* Disciplines section */
 	.disciplines {
-		background: #0a0e19;
+		position: relative;
+		z-index: 1;
 		padding: 5rem 6vw;
+		scroll-margin-top: 1rem;
 	}
 	.section-header {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 1rem;
 		margin-bottom: 2rem;
 	}
 	.section-eyebrow {
@@ -209,11 +369,26 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		font-size: clamp(1.6rem, 3vw, 2.2rem);
 		color: white;
 	}
+	.view-all {
+		padding-bottom: 0.3rem;
+		color: rgba(255, 255, 255, 0.85);
+		font-size: 0.75rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		text-decoration: none;
+		white-space: nowrap;
+		transition: color 0.2s ease;
+	}
+	.view-all:hover {
+		color: white;
+	}
 	.cards {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 1.5rem;
 	}
+
+	/* The whole card is one link */
 	.card {
 		position: relative;
 		display: flex;
@@ -224,6 +399,13 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		border-radius: 16px;
 		overflow: hidden;
 		isolation: isolate;
+		color: inherit;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	.card:focus-visible {
+		outline: 2px solid white;
+		outline-offset: 3px;
 	}
 	.card-bg,
 	.card-shade {
@@ -236,7 +418,8 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		transition: transform 0.6s ease;
 		z-index: -2;
 	}
-	.card:hover .card-bg {
+	.card:hover .card-bg,
+	.card:focus-visible .card-bg {
 		transform: scale(1.05);
 	}
 	.card-shade {
@@ -254,20 +437,58 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		line-height: 1.5;
 		color: rgba(255, 255, 255, 0.8);
 	}
+
+	/* Card button: same white sweep, triggered by hovering anywhere on the card */
 	.card-button {
-		display: inline-block;
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
 		padding: 0.6rem 1rem;
 		border: 1.5px solid rgba(255, 255, 255, 0.7);
 		border-radius: 8px;
 		background: rgba(10, 14, 25, 0.4);
 		color: white;
 		font-size: 0.85rem;
-		text-decoration: none;
+		transition: color 0.35s ease;
 	}
-	.card-button:hover {
+	.card-button::before {
+		content: '';
+		position: absolute;
+		inset: 0;
 		background: white;
-		color: black;
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+		z-index: -1;
 	}
+	.card-button .arrow {
+		display: inline-block;
+		transition: transform 0.35s ease;
+	}
+	.card:hover .card-button,
+	.card:focus-visible .card-button {
+		color: #0a0e19;
+	}
+	.card:hover .card-button::before,
+	.card:focus-visible .card-button::before {
+		transform: scaleX(1);
+	}
+	.card:hover .card-button .arrow,
+	.card:focus-visible .card-button .arrow {
+		transform: translateX(5px);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.card-bg,
+		.card-button,
+		.card-button::before,
+		.card-button .arrow {
+			transition: none;
+		}
+	}
+
 	@media (max-width: 900px) {
 		.cards {
 			grid-template-columns: 1fr;
