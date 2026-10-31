@@ -37,6 +37,45 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 					<a class="button" href="/blog">View my work →</a>
 				</div>
 			</section>
+
+			<section class="disciplines">
+				<div class="section-header">
+					<p class="section-eyebrow">Specialty</p>
+					<h2 class="section-title">What I Shoot</h2>
+				</div>
+
+				<div class="cards">
+					<div class="card">
+						<div class="card-bg" style="background-image: url('/hero.jpg')"></div>
+						<div class="card-shade"></div>
+						<div class="card-body">
+							<h3>Nature</h3>
+							<p>Rivers, mountains, and big open country. The quiet, wild side of the outdoors.</p>
+							<a class="card-button" href="/blog">View Nature →</a>
+						</div>
+					</div>
+
+					<div class="card">
+						<div class="card-bg" style="background-image: url('/hero-3.jpg')"></div>
+						<div class="card-shade"></div>
+						<div class="card-body">
+							<h3>Aviation</h3>
+							<p>Helicopters, airliners, and everything that flies, caught where they work.</p>
+							<a class="card-button" href="/blog">View Aviation →</a>
+						</div>
+					</div>
+
+					<div class="card">
+						<div class="card-bg" style="background-image: url('/hero-2.jpg')"></div>
+						<div class="card-shade"></div>
+						<div class="card-body">
+							<h3>Wildlife</h3>
+							<p>Whales, birds, and the moments that only last a second.</p>
+							<a class="card-button" href="/blog">View Wildlife →</a>
+						</div>
+					</div>
+				</div>
+			</section>
 		</main>
 		<Footer />
 	</body>
@@ -69,7 +108,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 	}
 	.hero {
 		position: relative;
-		min-height: 90vh;
+		min-height: 100vh;
 		display: flex;
 		align-items: center;
 		overflow: hidden;
@@ -139,5 +178,102 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 	.button:hover {
 		background: white;
 		color: black;
+	}
+
+	/* Disciplines section */
+	.disciplines {
+		background: #0a0e19;
+		padding: 5rem 6vw;
+	}
+	.section-header {
+		margin-bottom: 2rem;
+	}
+	.section-eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin: 0 0 0.5rem;
+		font-size: 0.75rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.6);
+	}
+	.section-eyebrow::after {
+		content: '';
+		width: 120px;
+		height: 1px;
+		background: rgba(255, 255, 255, 0.3);
+	}
+	.section-title {
+		margin: 0;
+		font-size: clamp(1.6rem, 3vw, 2.2rem);
+		color: white;
+	}
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.5rem;
+	}
+	.card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		min-height: 520px;
+		padding: 1.75rem;
+		border-radius: 16px;
+		overflow: hidden;
+		isolation: isolate;
+	}
+	.card-bg,
+	.card-shade {
+		position: absolute;
+		inset: 0;
+	}
+	.card-bg {
+		background-size: cover;
+		background-position: center;
+		transition: transform 0.6s ease;
+		z-index: -2;
+	}
+	.card:hover .card-bg {
+		transform: scale(1.05);
+	}
+	.card-shade {
+		background: linear-gradient(to bottom, rgba(10, 14, 25, 0) 30%, rgba(10, 14, 25, 0.95) 85%);
+		z-index: -1;
+	}
+	.card-body h3 {
+		margin: 0 0 0.5rem;
+		font-size: 1.8rem;
+		color: white;
+	}
+	.card-body p {
+		margin: 0 0 1.25rem;
+		font-size: 0.95rem;
+		line-height: 1.5;
+		color: rgba(255, 255, 255, 0.8);
+	}
+	.card-button {
+		display: inline-block;
+		padding: 0.6rem 1rem;
+		border: 1.5px solid rgba(255, 255, 255, 0.7);
+		border-radius: 8px;
+		background: rgba(10, 14, 25, 0.4);
+		color: white;
+		font-size: 0.85rem;
+		text-decoration: none;
+	}
+	.card-button:hover {
+		background: white;
+		color: black;
+	}
+	@media (max-width: 900px) {
+		.cards {
+			grid-template-columns: 1fr;
+		}
+		.card {
+			min-height: 420px;
+		}
 	}
 </style>
