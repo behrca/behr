@@ -1,9 +1,11 @@
 ---
 import HeaderLink from './HeaderLink.astro';
 import { SITE_TITLE } from '../consts';
+
+const isHome = Astro.url.pathname === '/';
 ---
 
-<header>
+<header class:list={[{ overlay: isHome }]}>
 	<nav>
 		   <a href="/" class="brand">
   <img src="/favicon.svg?v=10" alt="Behr Carey logo" width="32" height="32" />
@@ -106,5 +108,22 @@ h2 a.active {
 	}
 	.divider {
 		opacity: 0.5;
+	}
+	header.overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 10;
+		background: linear-gradient(to bottom, rgba(10, 14, 25, 0.7), rgba(10, 14, 25, 0));
+		box-shadow: none;
+	}
+	header.overlay nav a,
+	header.overlay .brand,
+	header.overlay .brand span {
+		color: white;
+	}
+	header.overlay .brand img {
+		filter: brightness(0) invert(1);
 	}
 </style>
