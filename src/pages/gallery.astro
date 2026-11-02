@@ -1,0 +1,430 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE } from '../consts';
+
+// Add, remove, or reorder photos here. category must match an id below.
+const photos = [
+	{
+		src: '/hero.jpg',
+		alt: 'River running through a forested mountain valley beneath snowy peaks',
+		category: 'nature',
+		caption: 'River valley',
+	},
+	{
+		src: '/hero-2.jpg',
+		alt: 'Whale spouts glowing in evening light in front of a dark forested shoreline',
+		category: 'wildlife',
+		caption: 'Whale spouts, evening light',
+	},
+	{
+		src: '/hero-3.jpg',
+		alt: 'Spray helicopter flying low in front of two wind turbines',
+		category: 'aviation',
+		caption: 'Spray helicopter and wind turbines',
+	},
+	{
+		src: '/hero-4.jpg',
+		alt: 'Passenger train on a cliffside track above a forested valley',
+		category: 'nature',
+		caption: 'Train on the cliff',
+	},
+	{ src: '/nature.jpg', alt: 'Nature photograph', category: 'nature' },
+	{ src: '/aviation.jpg', alt: 'Aviation photograph', category: 'aviation' },
+	{ src: '/wildlife.jpg', alt: 'Wildlife photograph', category: 'wildlife' },
+];
+
+const categories = [
+	{ id: 'all', label: 'All' },
+	{ id: 'nature', label: 'Nature' },
+	{ id: 'aviation', label: 'Aviation' },
+	{ id: 'wildlife', label: 'Wildlife' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`Gallery | ${SITE_TITLE}`}
+			description="Photography by Behr Carey: nature, aviation, and wildlife."
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="gallery-header">
+				<p class="eyebrow">Portfolio</p>
+				<h1>Gallery</h1>
+				<p class="intro">
+					A collection of my favorite shots: nature, aviation, wildlife, and whatever else catches my
+					eye.
+				</p>
+
+				<div class="filters" role="group" aria-label="Filter photos by category">
+					{
+						categories.map((cat) => (
+							<button
+								type="button"
+								class:list={['filter', { active: cat.id === 'all' }]}
+								data-filter={cat.id}
+								aria-pressed={cat.id === 'all' ? 'true' : 'false'}
+							>
+								{cat.label}
+							</button>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="grid">
+				{
+					photos.map((photo) => (
+						<button
+							type="button"
+							class="item"
+							data-category={photo.category}
+							data-src={photo.src}
+							data-alt={photo.alt}
+							data-caption={photo.caption ?? ''}
+							aria-label={`View photo: ${photo.caption ?? photo.alt}`}
+						>
+							<img src={photo.src} alt={photo.alt} decoding="async" />
+						</button>
+					))
+				}
+			</section>
+		</main>
+
+		<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
+			<button type="button" class="lb-close" aria-label="Close viewer">✕</button>
+			<button type="button" class="lb-nav lb-prev" aria-label="Previous photo">←</button>
+			<figure class="lb-figure">
+				<img id="lb-img" alt="" />
+				<figcaption id="lb-caption"></figcaption>
+			</figure>
+			<button type="button" class="lb-nav lb-next" aria-label="Next photo">→</button>
+		</div>
+
+		<Footer />
+	</body>
+</html>
+
+<script>
+	const filterButtons = document.querySelectorAll<HTMLButtonElement>('.filter');
+	const items = Array.from(document.querySelectorAll<HTMLButtonElement>('.item'));
+	const lightbox = document.getElementById('lightbox') as HTMLElement;
+	const lbFigure = lightbox.querySelector('.lb-figure') as HTMLElement;
+	const lbImg = document.getElementById('lb-img') as HTMLImageElement;
+	const lbCaption = document.getElementById('lb-caption') as HTMLElement;
+	const closeBtn = lightbox.querySelector('.lb-close') as HTMLButtonElement;
+	const prevBtn = lightbox.querySelector('.lb-prev') as HTMLButtonElement;
+	const nextBtn = lightbox.querySelector('.lb-next') as HTMLButtonElement;
+
+	let visible: HTMLButtonElement[] = items;
+	let index = 0;
+	let lastFocus: HTMLElement | null = null;
+
+	const getVisible = () => items.filter((it) => !it.hidden);
+
+	// Category filter
+	filterButtons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const cat = btn.dataset.filter;
+			filterButtons.forEach((b) => {
+				const on = b === btn;
+				b.classList.toggle('active', on);
+				b.setAttribute('aria-pressed', String(on));
+			});
+			items.forEach((it) => {
+				it.hidden = !(cat === 'all' || it.dataset.category === cat);
+			});
+		});
+	});
+
+	// Lightbox
+	function show(i: number) {
+		visible = getVisible();
+		if (!visible.length) return;
+		index = (i + visible.length) % visible.length;
+		const it = visible[index];
+		lbImg.src = it.dataset.src ?? '';
+		lbImg.alt = it.dataset.alt ?? '';
+		lbCaption.textContent = it.dataset.caption ?? '';
+	}
+
+	function openViewer(item: HTMLButtonElement) {
+		lastFocus = document.activeElement as HTMLElement;
+		visible = getVisible();
+		show(visible.indexOf(item));
+		lightbox.hidden = false;
+		document.body.style.overflow = 'hidden';
+		closeBtn.focus();
+	}
+
+	function closeViewer() {
+		lightbox.hidden = true;
+		document.body.style.overflow = '';
+		lbImg.removeAttribute('src');
+		lastFocus?.focus();
+	}
+
+	items.forEach((it) => it.addEventListener('click', () => openViewer(it)));
+	closeBtn.addEventListener('click', closeViewer);
+	prevBtn.addEventListener('click', () => show(index - 1));
+	nextBtn.addEventListener('click', () => show(index + 1));
+	lightbox.addEventListener('click', (e) => {
+		if (e.target === lightbox || e.target === lbFigure) closeViewer();
+	});
+	document.addEventListener('keydown', (e) => {
+		if (lightbox.hidden) return;
+		if (e.key === 'Escape') closeViewer();
+		if (e.key === 'ArrowLeft') show(index - 1);
+		if (e.key === 'ArrowRight') show(index + 1);
+	});
+</script>
+
+<style>
+	main {
+		width: 100%;
+		max-width: 100%;
+		min-height: 100vh;
+		padding: 0;
+		background: #0a0e19;
+		color: white;
+	}
+
+	/* Page heading */
+	.gallery-header {
+		padding: 9rem 6vw 2rem;
+	}
+	.eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin: 0 0 0.75rem;
+		font-size: 0.75rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.6);
+	}
+	.eyebrow::after {
+		content: '';
+		width: 120px;
+		height: 1px;
+		background: rgba(255, 255, 255, 0.3);
+	}
+	h1 {
+		margin: 0 0 1rem;
+		font-size: clamp(2.6rem, 7vw, 4.5rem);
+		line-height: 1;
+		color: white;
+	}
+	.intro {
+		max-width: 40rem;
+		margin: 0 0 2rem;
+		font-size: 1rem;
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.7);
+	}
+
+	/* Category filters */
+	.filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+	.filter {
+		padding: 0.55rem 1.1rem;
+		border: 1.5px solid rgba(255, 255, 255, 0.4);
+		border-radius: 999px;
+		background: transparent;
+		color: white;
+		font: inherit;
+		font-size: 0.75rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition:
+			background 0.25s ease,
+			color 0.25s ease,
+			border-color 0.25s ease;
+	}
+	.filter:hover {
+		border-color: white;
+	}
+	.filter.active {
+		background: white;
+		border-color: white;
+		color: #0a0e19;
+	}
+	.filter:focus-visible,
+	.item:focus-visible {
+		outline: 2px solid white;
+		outline-offset: 3px;
+	}
+
+	/* Photo grid: photos keep their natural shape, nothing is cropped or stretched */
+	.grid {
+		column-count: 3;
+		column-gap: 1.25rem;
+		padding: 1rem 6vw 5rem;
+	}
+	.item {
+		display: block;
+		width: 100%;
+		margin: 0 0 1.25rem;
+		padding: 0;
+		border: 0;
+		border-radius: 12px;
+		overflow: hidden;
+		background: #111827;
+		cursor: zoom-in;
+		break-inside: avoid;
+		animation: item-in 0.6s ease both;
+	}
+	.item[hidden] {
+		display: none;
+	}
+	.item img {
+		display: block;
+		width: 100%;
+		height: auto;
+		transition: transform 0.6s ease;
+	}
+	.item:hover img,
+	.item:focus-visible img {
+		transform: scale(1.04);
+	}
+	@keyframes item-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	@media (max-width: 1000px) {
+		.grid {
+			column-count: 2;
+		}
+	}
+	@media (max-width: 600px) {
+		.grid {
+			column-count: 1;
+		}
+		.gallery-header {
+			padding-top: 11rem;
+		}
+	}
+
+	/* Full-size viewer */
+	.lightbox {
+		position: fixed;
+		inset: 0;
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 3rem 5rem;
+		background: rgba(5, 8, 15, 0.94);
+		animation: item-in 0.3s ease;
+	}
+	.lightbox[hidden] {
+		display: none;
+	}
+	.lb-figure {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		max-width: 100%;
+		max-height: 100%;
+		margin: 0;
+	}
+	.lb-figure img {
+		max-width: 100%;
+		max-height: calc(100vh - 10rem);
+		object-fit: contain;
+		border-radius: 6px;
+	}
+	.lb-figure figcaption {
+		min-height: 1.2em;
+		font-size: 0.9rem;
+		letter-spacing: 0.1em;
+		color: rgba(255, 255, 255, 0.75);
+	}
+	.lb-close,
+	.lb-nav {
+		position: absolute;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border: 1.5px solid rgba(255, 255, 255, 0.5);
+		border-radius: 999px;
+		background: transparent;
+		color: white;
+		font-size: 1.1rem;
+		cursor: pointer;
+		transition:
+			background 0.25s ease,
+			color 0.25s ease;
+	}
+	.lb-close:hover,
+	.lb-nav:hover,
+	.lb-close:focus-visible,
+	.lb-nav:focus-visible {
+		background: white;
+		color: #0a0e19;
+	}
+	.lb-close {
+		top: 1.25rem;
+		right: 1.25rem;
+	}
+	.lb-prev {
+		left: 1.25rem;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+	.lb-next {
+		right: 1.25rem;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+	@media (max-width: 700px) {
+		.lightbox {
+			padding: 4rem 1rem 6rem;
+		}
+		.lb-figure img {
+			max-height: calc(100vh - 14rem);
+		}
+		.lb-nav {
+			top: auto;
+			bottom: 1.25rem;
+			transform: none;
+		}
+		.lb-prev {
+			left: calc(50% - 56px);
+		}
+		.lb-next {
+			right: auto;
+			left: calc(50% + 12px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.item,
+		.lightbox {
+			animation: none;
+		}
+		.item img,
+		.filter,
+		.lb-close,
+		.lb-nav {
+			transition: none;
+		}
+	}
+</style>
