@@ -23,6 +23,8 @@ const isOverlay = path === '/' || path === '/gallery';
 </header>
 <style>
 	header {
+		position: relative;
+		z-index: 10;
 		margin: 0;
 		padding: 0 1em;
 		background: var(--page-bg);
@@ -36,12 +38,38 @@ const isOverlay = path === '/' || path === '/gallery';
 	nav a {
 		padding: 1em 0.5em;
 		color: var(--black);
-		border-bottom: 4px solid transparent;
 		text-decoration: none;
 	}
 	nav a.active {
 		text-decoration: none;
-		border-bottom-color: var(--accent);
+	}
+
+	/* Nav links: underline sweeps in from the left on hover, out to the right on leave */
+	.internal-links a {
+		position: relative;
+		transition: opacity 0.3s ease;
+	}
+	.internal-links a::after {
+		content: '';
+		position: absolute;
+		left: 0.5em;
+		right: 0.5em;
+		bottom: 0.6em;
+		height: 2px;
+		background: currentColor;
+		transform: scaleX(0);
+		transform-origin: right;
+		transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+	.internal-links a:hover::after,
+	.internal-links a:focus-visible::after,
+	.internal-links a.active::after {
+		transform: scaleX(1);
+		transform-origin: left;
+	}
+	/* While hovering the nav, the other links dim slightly */
+	.internal-links:hover a:not(:hover) {
+		opacity: 0.55;
 	}
 	.internal-links {
 		justify-self: center;
@@ -92,4 +120,123 @@ const isOverlay = path === '/' || path === '/gallery';
 	header.overlay .brand img {
 		filter: brightness(0) invert(1);
 	}
+
+	/* Pinned state: after you scroll past the top, the header leaves the page flow and
+	   waits just above the screen. Scrolling up slides it down; scrolling down sends it back up. */
+	header.is-fixed {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		transform: translateY(-100%);
+		transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+	header.is-fixed.is-shown,
+	header.is-fixed:focus-within {
+		transform: none;
+		transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	/* The floating header gets a dark frosted backdrop while pinned, so it stays readable over photos */
+	header.overlay::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: rgba(10, 14, 25, 0.9);
+		-webkit-backdrop-filter: blur(10px);
+		backdrop-filter: blur(10px);
+		opacity: 0;
+		transition: opacity 0.5s ease;
+	}
+	header.overlay.is-fixed::before {
+		opacity: 1;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		header.is-fixed,
+		header.is-fixed.is-shown,
+		header.overlay::before,
+		.internal-links a,
+		.internal-links a::after {
+			transition: none;
+		}
+	}
 </style>
+
+<script>
+// On a refresh, always start at the top (back and forward buttons still return you to your spot)
+const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+if (nav?.type === 'reload') {
+	history.scrollRestoration = 'manual';
+	window.scrollTo(0, 0);
+	window.addEventListener('load', () => {
+		window.scrollTo(0, 0);
+		history.scrollRestoration = 'auto';
+	});
+}
+	const header = document.querySelector('header') as HTMLElement;
+	const isOverlay = header.classList.contains('overlay');
+	let spacer: HTMLElement | null = null;
+	let lastY = window.scrollY;
+	let waiting = false;
+
+	// Take the header out of the page flow, parked just above the screen (no animation)
+	function pin() {
+		if (header.classList.contains('is-fixed')) return;
+		if (!isOverlay) {
+			// keep the page content from jumping up when the header leaves the flow
+			spacer = document.createElement('div');
+			spacer.style.height = `${header.offsetHeight}px`;
+			header.after(spacer);
+		}
+		header.style.transition = 'none';
+		header.classList.add('is-fixed');
+		void header.offsetHeight; // apply that state before animating
+		header.style.transition = '';
+	}
+
+	// Put the header back to its normal place at the top of the page
+	function unpin() {
+		if (!header.classList.contains('is-fixed')) return;
+		header.style.transition = 'none';
+		header.classList.remove('is-fixed', 'is-shown');
+		spacer?.remove();
+		spacer = null;
+		void header.offsetHeight;
+		header.style.transition = '';
+	}
+
+	function update() {
+		const y = Math.max(window.scrollY, 0);
+		const dy = y - lastY;
+
+		if (y <= 4) {
+			// back at the very top: the header returns to its normal spot
+			unpin();
+			lastY = y;
+		} else if (Math.abs(dy) > 6) {
+			if (dy < 0) {
+				// scrolling up: slide the header down
+				pin();
+				header.classList.add('is-shown');
+			} else {
+				// scrolling down: slide it away (if it's showing)
+				header.classList.remove('is-shown');
+			}
+			lastY = y;
+		}
+		waiting = false;
+	}
+
+	window.addEventListener(
+		'scroll',
+		() => {
+			if (!waiting) {
+				waiting = true;
+				requestAnimationFrame(update);
+			}
+		},
+		{ passive: true }
+	);
+</script>

@@ -1,38 +1,124 @@
 ---
+import path from 'node:path';
 import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_TITLE } from '../consts';
 
 // Add, remove, or reorder photos here. category must match an id below.
+// Only src, alt and category are required. Everything else is optional,
+// and any line you leave out simply doesn't show.
+//   caption     short line shown when you hover a photo in the grid
+//   title       heading in the full-screen viewer (falls back to caption)
+//   description a sentence or two about the photo
+//   location, date, camera, lens, focal, aperture, shutter, iso   shown in the details panel
 const photos = [
 	{
 		src: '/hero.jpg',
 		alt: 'River running through a forested mountain valley beneath snowy peaks',
 		category: 'nature',
-		caption: 'River valley',
+		caption: 'Canadian River Valley',
+		title: 'Tutshi River Canyon',
+		description: 'The Tutshi River Canyon taken from the Yukon Suspension Bridge in Yukon, Canada',
+		location: 'Yukon, Canada',
+		date: 'August 12th, 2026',
+		camera: 'Canon EOS Rebel T6',
+		lens: 'EF-S18-55mm f/3.5-5.6 IS II',
+		focal: '51mm',
+		aperture: 'f/11',
+		shutter: '1/400s',
+		iso: 'ISO 400',
 	},
 	{
 		src: '/hero-2.jpg',
 		alt: 'Whale spouts glowing in evening light in front of a dark forested shoreline',
 		category: 'wildlife',
-		caption: 'Whale spouts, evening light',
+		caption: 'Whale spouts in Alaska',
+        title: 'Alaskan Whales',
+		description: 'Whales spouting as they are bubble-net feeding in Juneau, Alaska',
+		location: 'Juneau, Alaska',
+		date: 'August 11th, 2026',
+		camera: 'Canon EOS Rebel T6',
+		lens: 'EF75-300mm f/4-5.6',
+		focal: '155mm',
+		aperture: 'f/5.0',
+		shutter: '1/3200s',
+		iso: 'ISO 100',
 	},
 	{
 		src: '/hero-3.jpg',
-		alt: 'Spray helicopter flying low in front of two wind turbines',
+		alt: 'Crop duster aircraft flying',
 		category: 'aviation',
-		caption: 'Spray helicopter and wind turbines',
+		caption: 'Crop duster spraying field',
+         title: 'Iowa Aviation',
+		description: 'Crop-dusting fields by aircraft is common here in the Midwest.',
+		location: 'Iowa, United States',
+		date: 'July 24th, 2026',
+		camera: 'Canon EOS Rebel T6',
+		lens: 'EF75-300mm f/4-5.6',
+		focal: '110mm',
+		aperture: 'f/5.0',
+		shutter: '1/2000s',
+		iso: 'ISO 400',
 	},
 	{
 		src: '/hero-4.jpg',
 		alt: 'Passenger train on a cliffside track above a forested valley',
 		category: 'nature',
-		caption: 'Train on the cliff',
+		caption: 'White Pass & Yukon Route Railway',
+         title: 'White Pass Railway',
+		description: 'The White Pass & Yukon Route Railway in Skagway, Alaska',
+		location: 'Skagway, Alaska',
+		date: 'August 12th, 2026',
+		camera: 'Canon EOS Rebel T6',
+		lens: 'EF-S18-55mm f/3.5-5.6 IS II',
+		focal: '34mm',
+		aperture: 'f/9.0',
+		shutter: '1/1250s',
+		iso: 'ISO 800',
 	},
-	{ src: '/nature.jpg', alt: 'Nature photograph', category: 'nature' },
-	{ src: '/aviation.jpg', alt: 'Aviation photograph', category: 'aviation' },
-	{ src: '/wildlife.jpg', alt: 'Wildlife photograph', category: 'wildlife' },
+	{ src: '/nature.jpg', 
+    alt: 'Nature photograph', 
+    category: 'nature',
+     title: 'Skagway',
+		description: 'Looking down at the Taiya Inlet and Skagway, Alaska',
+		location: 'Skagway, Alaska',
+		date: 'August 12th, 2026',
+		camera: 'Canon EOS Rebel T6',
+		lens: 'EF-S18-55mm f/3.5-5.6 IS II',
+		focal: '55mm',
+		aperture: 'f/8.0',
+		shutter: '1/1600s',
+		iso: 'ISO 800',
+    },
+	{ src: '/aviation.jpg', 
+    alt: 'Aviation photograph', 
+    category: 'aviation',
+     title: 'Helicopter spraying field',
+		description: 'Helicopter spraying corn field in Iowa.',
+		location: 'Iowa, United States',
+		date: 'July 23rd, 2026',
+		camera: 'Canon EOS Rebel T6',
+		lens: 'EF75-300mm f/4-5.6',
+		focal: '300mm',
+		aperture: 'f/5.6',
+		shutter: '1/3200s',
+		iso: 'ISO 800', 
+    },
+	{ src: '/wildlife.jpg', 
+    alt: 'Wildlife photograph', 
+    category: 'wildlife',
+     title: 'Alaskan Whales',
+		description: 'Whales bubble-net feeding in Juneau, Alaska',
+		location: 'Juneau, Alaska',
+		date: 'August 11th, 2026',
+		camera: 'Canon EOS Rebel T6',
+		lens: 'EF75-300mm f/4-5.6',
+		focal: '220mm',
+		aperture: 'f/7.1',
+		shutter: '1/500s',
+		iso: 'ISO 800',
+    },
 ];
 
 const categories = [
@@ -41,6 +127,28 @@ const categories = [
 	{ id: 'aviation', label: 'Aviation' },
 	{ id: 'wildlife', label: 'Wildlife' },
 ];
+
+// Read each photo's real size at build time so the page can reserve the right
+// space before the image loads (this is what makes lazy loading smooth).
+// If anything goes wrong, the page still works with a placeholder shape.
+let sharp: any = null;
+try {
+	sharp = (await import('sharp')).default;
+} catch {
+	sharp = null;
+}
+const items = await Promise.all(
+	photos.map(async (photo) => {
+		const label = categories.find((c) => c.id === photo.category)?.label ?? '';
+		const caption = photo.caption ?? label;
+		try {
+			const meta = await sharp(path.join(process.cwd(), 'public', photo.src)).metadata();
+			return { ...photo, caption, width: meta.width, height: meta.height };
+		} catch {
+			return { ...photo, caption };
+		}
+	})
+);
 ---
 
 <!doctype html>
@@ -80,17 +188,40 @@ const categories = [
 
 			<section class="grid">
 				{
-					photos.map((photo) => (
+					items.map((photo, i) => (
 						<button
 							type="button"
 							class="item"
 							data-category={photo.category}
 							data-src={photo.src}
 							data-alt={photo.alt}
-							data-caption={photo.caption ?? ''}
-							aria-label={`View photo: ${photo.caption ?? photo.alt}`}
+							data-caption={photo.caption}
+							data-info={JSON.stringify({
+								title: photo.title ?? photo.caption,
+								description: photo.description,
+								category: categories.find((c) => c.id === photo.category)?.label,
+								location: photo.location,
+								date: photo.date,
+								camera: photo.camera,
+								lens: photo.lens,
+								focal: photo.focal,
+								aperture: photo.aperture,
+								shutter: photo.shutter,
+								iso: photo.iso,
+							})}
+							data-ratio={photo.width && photo.height ? (photo.width / photo.height).toFixed(3) : undefined}
+							aria-label={`View photo: ${photo.caption}`}
 						>
-							<img src={photo.src} alt={photo.alt} decoding="async" />
+							<img
+								src={photo.src}
+								alt={photo.alt}
+								width={photo.width}
+								height={photo.height}
+								loading={i < 3 ? 'eager' : 'lazy'}
+								decoding="async"
+								style={photo.width ? undefined : 'aspect-ratio: auto 3 / 2'}
+							/>
+							<span class="cap">{photo.caption}</span>
 						</button>
 					))
 				}
@@ -100,11 +231,35 @@ const categories = [
 		<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
 			<button type="button" class="lb-close" aria-label="Close viewer">✕</button>
 			<button type="button" class="lb-nav lb-prev" aria-label="Previous photo">←</button>
-			<figure class="lb-figure">
-				<img id="lb-img" alt="" />
-				<figcaption id="lb-caption"></figcaption>
-			</figure>
+
+			<div class="lb-panel">
+				<figure class="lb-figure">
+					<img id="lb-img" alt="" />
+				</figure>
+
+				<aside class="lb-info">
+					<h2 id="lb-title"></h2>
+					<p id="lb-desc"></p>
+
+					<section class="lb-block" id="lb-details" hidden>
+						<h3>Photo Info</h3>
+						<ul class="rows"></ul>
+						<div class="specs"></div>
+					</section>
+
+					<section class="lb-block" id="lb-exif" hidden>
+						<h3>Camera</h3>
+						<ul class="rows"></ul>
+						<div class="specs"></div>
+					</section>
+				</aside>
+			</div>
+
 			<button type="button" class="lb-nav lb-next" aria-label="Next photo">→</button>
+		</div>
+
+		<div class="copyright-tip" id="copyright-tip" role="status" aria-live="polite">
+			© Behr Carey. All rights reserved.
 		</div>
 
 		<Footer />
@@ -112,15 +267,25 @@ const categories = [
 </html>
 
 <script>
+	import { gsap } from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+	gsap.registerPlugin(ScrollTrigger);
+
 	const filterButtons = document.querySelectorAll<HTMLButtonElement>('.filter');
 	const items = Array.from(document.querySelectorAll<HTMLButtonElement>('.item'));
 	const lightbox = document.getElementById('lightbox') as HTMLElement;
+	const lbPanel = lightbox.querySelector('.lb-panel') as HTMLElement;
 	const lbFigure = lightbox.querySelector('.lb-figure') as HTMLElement;
 	const lbImg = document.getElementById('lb-img') as HTMLImageElement;
-	const lbCaption = document.getElementById('lb-caption') as HTMLElement;
+	const lbTitle = document.getElementById('lb-title') as HTMLElement;
+	const lbDesc = document.getElementById('lb-desc') as HTMLElement;
+	const lbDetails = document.getElementById('lb-details') as HTMLElement;
+	const lbExif = document.getElementById('lb-exif') as HTMLElement;
 	const closeBtn = lightbox.querySelector('.lb-close') as HTMLButtonElement;
 	const prevBtn = lightbox.querySelector('.lb-prev') as HTMLButtonElement;
 	const nextBtn = lightbox.querySelector('.lb-next') as HTMLButtonElement;
+
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	let visible: HTMLButtonElement[] = items;
 	let index = 0;
@@ -128,7 +293,62 @@ const categories = [
 
 	const getVisible = () => items.filter((it) => !it.hidden);
 
-	// Category filter
+	// ---- Collage layout -------------------------------------------------
+	// Each photo's slot width follows its shape: wide photos get wider slots,
+	// tall photos get narrower ones, so everything ends up a similar size.
+	// Every other photo is also dropped a little lower for the staggered look.
+	function layout() {
+		getVisible().forEach((it, i) => {
+			const r = Number(it.dataset.ratio) || 1.5; // width divided by height
+			it.dataset.shape = r >= 1.2 ? 'land' : r <= 0.85 ? 'port' : 'sq';
+			it.dataset.pos = String(i % 2);
+		});
+	}
+
+	// ---- Scroll motion --------------------------------------------------
+	// Each photo (1) fades up into its frame as it enters the screen and
+	// (2) drifts at its own speed while you scroll. Bigger number = faster drift.
+	const DRIFT = [30, 80, 20, 60, 40, 70];
+	let ctx: gsap.Context | undefined;
+
+	function setupMotion() {
+		ctx?.revert();
+		if (reduceMotion) return;
+		const k = window.innerWidth < 700 ? 0.4 : 1; // gentler drift on phones
+		ctx = gsap.context(() => {
+			getVisible().forEach((it, i) => {
+				const img = it.querySelector('img');
+				const speed = DRIFT[i % DRIFT.length] * k;
+
+				gsap.fromTo(
+					img,
+					{ opacity: 0, y: 70 },
+					{
+						opacity: 1,
+						y: 0,
+						duration: 1.1,
+						ease: 'power3.out',
+						delay: (i % 3) * 0.08,
+						clearProps: 'transform',
+						scrollTrigger: { trigger: it, start: 'top 90%', once: true },
+					}
+				);
+
+				gsap.fromTo(
+					it,
+					{ y: speed },
+					{
+						y: -speed,
+						ease: 'none',
+						scrollTrigger: { trigger: it, start: 'top bottom', end: 'bottom top', scrub: 0.8 },
+					}
+				);
+			});
+		});
+		ScrollTrigger.refresh();
+	}
+
+	// ---- Category filter ------------------------------------------------
 	filterButtons.forEach((btn) => {
 		btn.addEventListener('click', () => {
 			const cat = btn.dataset.filter;
@@ -137,13 +357,68 @@ const categories = [
 				b.classList.toggle('active', on);
 				b.setAttribute('aria-pressed', String(on));
 			});
-			items.forEach((it) => {
-				it.hidden = !(cat === 'all' || it.dataset.category === cat);
+
+			const applyFilter = () => {
+				items.forEach((it) => {
+					it.hidden = !(cat === 'all' || it.dataset.category === cat);
+				});
+				layout();
+			};
+
+			if (reduceMotion) {
+				applyFilter();
+				return;
+			}
+
+			// current photos fade out, the collage rearranges, the new set rises in
+			gsap.killTweensOf(items);
+			gsap.to(getVisible(), {
+				opacity: 0,
+				duration: 0.25,
+				ease: 'power1.in',
+				onComplete: () => {
+					applyFilter();
+					gsap.set(items, { opacity: 1 });
+					setupMotion();
+				},
 			});
 		});
 	});
 
-	// Lightbox
+	layout();
+	setupMotion();
+	window.addEventListener('load', () => ScrollTrigger.refresh());
+
+	// ---- Full-screen viewer ---------------------------------------------
+	type Info = Record<string, string | undefined>;
+
+	// Fills one box of the details panel; the box hides itself if there's nothing to show
+	function fill(box: HTMLElement, rows: [string, string | undefined][], specs: (string | undefined)[] = []) {
+		const list = box.querySelector('.rows') as HTMLElement;
+		const bar = box.querySelector('.specs') as HTMLElement;
+		list.replaceChildren();
+		bar.replaceChildren();
+
+		rows.forEach(([label, value]) => {
+			if (!value) return;
+			const li = document.createElement('li');
+			const l = document.createElement('span');
+			const v = document.createElement('strong');
+			l.textContent = label;
+			v.textContent = value;
+			li.append(l, v);
+			list.append(li);
+		});
+		specs.forEach((value) => {
+			if (!value) return;
+			const s = document.createElement('span');
+			s.textContent = value;
+			bar.append(s);
+		});
+
+		box.hidden = !list.children.length && !bar.children.length;
+	}
+
 	function show(i: number) {
 		visible = getVisible();
 		if (!visible.length) return;
@@ -151,7 +426,24 @@ const categories = [
 		const it = visible[index];
 		lbImg.src = it.dataset.src ?? '';
 		lbImg.alt = it.dataset.alt ?? '';
-		lbCaption.textContent = it.dataset.caption ?? '';
+
+		const info: Info = JSON.parse(it.dataset.info || '{}');
+		lbTitle.textContent = info.title ?? '';
+		lbDesc.textContent = info.description ?? '';
+		lbDesc.hidden = !info.description;
+		fill(lbDetails, [
+			['Category', info.category],
+			['Location', info.location],
+			['Taken', info.date],
+		]);
+		fill(
+			lbExif,
+			[
+				['Camera', info.camera],
+				['Lens', info.lens],
+			],
+			[info.focal, info.aperture, info.shutter, info.iso]
+		);
 	}
 
 	function openViewer(item: HTMLButtonElement) {
@@ -175,13 +467,37 @@ const categories = [
 	prevBtn.addEventListener('click', () => show(index - 1));
 	nextBtn.addEventListener('click', () => show(index + 1));
 	lightbox.addEventListener('click', (e) => {
-		if (e.target === lightbox || e.target === lbFigure) closeViewer();
+		if (e.target === lightbox || e.target === lbPanel || e.target === lbFigure) closeViewer();
 	});
 	document.addEventListener('keydown', (e) => {
 		if (lightbox.hidden) return;
 		if (e.key === 'Escape') closeViewer();
 		if (e.key === 'ArrowLeft') show(index - 1);
 		if (e.key === 'ArrowRight') show(index + 1);
+	});
+
+	// ---- Copyright notice on right-click ---------------------------------
+	const tip = document.getElementById('copyright-tip') as HTMLElement;
+	let tipTimer: number | undefined;
+
+	function showTip(x: number, y: number) {
+		const half = tip.offsetWidth / 2 + 12;
+		tip.style.left = `${Math.min(Math.max(x, half), window.innerWidth - half)}px`;
+		tip.style.top = `${Math.max(y - 16, tip.offsetHeight + 16)}px`;
+		tip.classList.add('show');
+		window.clearTimeout(tipTimer);
+		tipTimer = window.setTimeout(() => tip.classList.remove('show'), 2200);
+	}
+
+	document.addEventListener('contextmenu', (e) => {
+		if ((e.target as HTMLElement).closest('.item, .lb-figure')) {
+			e.preventDefault();
+			showTip(e.clientX, e.clientY);
+		}
+	});
+	// stop photos from being dragged out of the page onto the desktop
+	document.addEventListener('dragstart', (e) => {
+		if ((e.target as HTMLElement).closest('.item, .lb-figure')) e.preventDefault();
 	});
 </script>
 
@@ -193,6 +509,7 @@ const categories = [
 		padding: 0;
 		background: #0a0e19;
 		color: white;
+		overflow-x: clip;
 	}
 
 	/* Page heading */
@@ -265,61 +582,134 @@ const categories = [
 		outline-offset: 3px;
 	}
 
-	/* Photo grid: photos keep their natural shape, nothing is cropped or stretched */
+	/* Staggered collage: rows of photos whose widths follow their shape.
+	   Photos keep their natural proportions (very tall ones are trimmed slightly). */
 	.grid {
-		column-count: 3;
-		column-gap: 1.25rem;
-		padding: 1rem 6vw 5rem;
+		--gap: 1.25rem;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 4.5rem var(--gap);
+		padding: 2rem 6vw 8rem;
 	}
 	.item {
+		--span: 6;
+		--w: calc((100% - 11 * var(--gap)) * var(--span) / 12 + (var(--span) - 1) * var(--gap));
+		position: relative;
 		display: block;
-		width: 100%;
-		margin: 0 0 1.25rem;
+		flex: 1 1 var(--w);
+		max-width: calc(var(--w) * 1.3);
+		margin: 0;
 		padding: 0;
 		border: 0;
 		border-radius: 12px;
 		overflow: hidden;
 		background: #111827;
 		cursor: zoom-in;
-		break-inside: avoid;
-		animation: item-in 0.6s ease both;
 	}
 	.item[hidden] {
 		display: none;
+	}
+	.item[data-shape='land'] {
+		--span: 6;
+	}
+	.item[data-shape='sq'] {
+		--span: 5;
+	}
+	.item[data-shape='port'] {
+		--span: 4;
+	}
+	.item[data-pos='1'] {
+		margin-top: 4rem;
 	}
 	.item img {
 		display: block;
 		width: 100%;
 		height: auto;
+		max-height: 75vh;
+		object-fit: cover;
 		transition: transform 0.6s ease;
 	}
 	.item:hover img,
 	.item:focus-visible img {
 		transform: scale(1.04);
 	}
-	@keyframes item-in {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
+
+	/* Hover caption */
+	.item::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, rgba(10, 14, 25, 0.85), rgba(10, 14, 25, 0) 55%);
+		opacity: 0;
+		transition: opacity 0.4s ease;
+		pointer-events: none;
 	}
-	@media (max-width: 1000px) {
-		.grid {
-			column-count: 2;
-		}
+	.cap {
+		position: absolute;
+		left: 1.1rem;
+		right: 1.1rem;
+		bottom: 1rem;
+		z-index: 1;
+		text-align: left;
+		font-size: 0.75rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: white;
+		opacity: 0;
+		transform: translateY(10px);
+		transition:
+			opacity 0.4s ease,
+			transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+		pointer-events: none;
 	}
-	@media (max-width: 600px) {
+	.item:hover::after,
+	.item:focus-visible::after {
+		opacity: 1;
+	}
+	.item:hover .cap,
+	.item:focus-visible .cap {
+		opacity: 1;
+		transform: none;
+	}
+
+	/* Tablet: two per row, wide photos go full width */
+	@media (max-width: 900px) {
 		.grid {
-			column-count: 1;
+			row-gap: 3rem;
 		}
-		.gallery-header {
-			padding-top: 11rem;
+		.item[data-shape] {
+			--span: 6;
+			margin-top: 0;
+		}
+		.item[data-shape='land'] {
+			--span: 12;
+		}
+		.item[data-pos='1'][data-shape]:not([data-shape='land']) {
+			margin-top: 3rem;
 		}
 	}
 
-	/* Full-size viewer */
+	/* Phone: one column, alternating photos are inset to keep the staggered feel */
+	@media (max-width: 600px) {
+		.gallery-header {
+			padding-top: 11rem;
+		}
+		.grid {
+			row-gap: 2rem;
+		}
+		.item[data-shape] {
+			--span: 12;
+			margin-top: 0;
+		}
+		.item[data-pos='1'][data-shape] {
+			--span: 10;
+			margin-left: auto;
+		}
+	}
+
+	/* Full-size viewer: photo on the left, details on the right */
 	.lightbox {
 		position: fixed;
 		inset: 0;
@@ -327,34 +717,123 @@ const categories = [
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 3rem 5rem;
+		padding: 3.5rem 5rem;
 		background: rgba(5, 8, 15, 0.94);
-		animation: item-in 0.3s ease;
+		animation: lb-in 0.3s ease;
 	}
 	.lightbox[hidden] {
 		display: none;
 	}
+	@keyframes lb-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	.lb-panel {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 360px;
+		gap: 1.25rem;
+		width: min(1400px, 100%);
+		height: 100%;
+		max-height: 860px;
+	}
 	.lb-figure {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: 1rem;
-		max-width: 100%;
-		max-height: 100%;
+		justify-content: center;
+		min-width: 0;
+		min-height: 0;
 		margin: 0;
+		overflow: hidden;
+		border-radius: 16px;
+		background: #0e121c;
 	}
 	.lb-figure img {
 		max-width: 100%;
-		max-height: calc(100vh - 10rem);
+		max-height: 100%;
 		object-fit: contain;
 		border-radius: 6px;
 	}
-	.lb-figure figcaption {
-		min-height: 1.2em;
-		font-size: 0.9rem;
-		letter-spacing: 0.1em;
+
+	/* Details panel */
+	.lb-info {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		min-height: 0;
+		overflow-y: auto;
+		padding: 2rem 1.75rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 16px;
+		background: #080b13;
+	}
+	.lb-info h2 {
+		margin: 0;
+		font-size: 1.7rem;
+		line-height: 1.15;
+		color: white;
+	}
+	.lb-info p {
+		margin: 0;
+		line-height: 1.6;
 		color: rgba(255, 255, 255, 0.75);
 	}
+	.lb-block h3 {
+		margin: 0 0 0.75rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.55);
+	}
+	.rows {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-radius: 12px;
+		background: rgba(255, 255, 255, 0.05);
+	}
+	.rows:empty,
+	.specs:empty {
+		display: none;
+	}
+	.rows :global(li) {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.8rem 1rem;
+		font-size: 0.9rem;
+	}
+	.rows :global(li + li) {
+		border-top: 1px solid rgba(255, 255, 255, 0.07);
+	}
+	.rows :global(span) {
+		flex-shrink: 0;
+		color: rgba(255, 255, 255, 0.55);
+	}
+	.rows :global(strong) {
+		font-weight: 500;
+		text-align: right;
+		color: white;
+	}
+	.rows + .specs {
+		margin-top: 0.5rem;
+	}
+	.specs {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.9rem 1rem;
+		border-radius: 12px;
+		background: rgba(255, 255, 255, 0.05);
+		font-size: 0.9rem;
+		color: white;
+	}
+
+	/* Close and arrow buttons */
 	.lb-close,
 	.lb-nav {
 		position: absolute;
@@ -394,14 +873,27 @@ const categories = [
 		top: 50%;
 		transform: translateY(-50%);
 	}
-	@media (max-width: 700px) {
+
+	/* Tablet and phone: photo on top, details underneath, viewer scrolls */
+	@media (max-width: 900px) {
 		.lightbox {
+			align-items: flex-start;
+			overflow-y: auto;
 			padding: 4rem 1rem 6rem;
 		}
+		.lb-panel {
+			grid-template-columns: 1fr;
+			height: auto;
+			max-height: none;
+		}
 		.lb-figure img {
-			max-height: calc(100vh - 14rem);
+			max-height: 55vh;
+		}
+		.lb-info {
+			overflow: visible;
 		}
 		.lb-nav {
+			position: fixed;
 			top: auto;
 			bottom: 1.25rem;
 			transform: none;
@@ -415,12 +907,54 @@ const categories = [
 		}
 	}
 
+	/* Copyright notice shown when someone right-clicks a photo */
+	.item img,
+	.lb-figure img {
+		-webkit-user-drag: none;
+		-webkit-touch-callout: none;
+		user-select: none;
+	}
+	.copyright-tip {
+		position: fixed;
+		z-index: 200;
+		padding: 0.7rem 1.1rem;
+		border-radius: 8px;
+		background: #1a1d24;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+		color: white;
+		font-size: 0.9rem;
+		white-space: nowrap;
+		opacity: 0;
+		transform: translate(-50%, calc(-100% + 6px));
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease;
+		pointer-events: none;
+	}
+	.copyright-tip::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 7px solid transparent;
+		border-top-color: #1a1d24;
+	}
+	.copyright-tip.show {
+		opacity: 1;
+		transform: translate(-50%, -100%);
+	}
+
 	@media (prefers-reduced-motion: reduce) {
-		.item,
+		.copyright-tip {
+			transition: none;
+		}
 		.lightbox {
 			animation: none;
 		}
 		.item img,
+		.item::after,
+		.cap,
 		.filter,
 		.lb-close,
 		.lb-nav {

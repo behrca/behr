@@ -3,6 +3,7 @@ import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import Intro from '../components/Intro.astro';
 ---
 
 <!doctype html>
@@ -11,6 +12,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
+	  <Intro />
 		<Header />
 		<main>
 			<div class="page-bg">
@@ -37,7 +39,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 						</span>
 					</h1>
 					<p class="tagline">Nature. Aviation. More.</p>
-					<a class="button" href="/blog">
+					<a class="button" href="/gallery">
 						<span class="label">View my work</span>
 						<span class="arrow" aria-hidden="true">→</span>
 					</a>
@@ -67,11 +69,11 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 						<p class="section-eyebrow">Specialty</p>
 						<h2 class="section-title">Explore My Work</h2>
 					</div>
-					<a class="view-all" href="/blog">View all →</a>
+					<a class="view-all" href="/gallery">View all →</a>
 				</div>
 
 				<div class="cards">
-					<a class="card" href="/blog">
+					<a class="card" href="/gallery">
 						<div class="card-bg" style="background-image: url('/nature.jpg')"></div>
 						<div class="card-shade"></div>
 						<div class="card-body">
@@ -84,7 +86,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 						</div>
 					</a>
 
-					<a class="card" href="/blog">
+					<a class="card" href="/gallery">
 						<div class="card-bg" style="background-image: url('/aviation.jpg')"></div>
 						<div class="card-shade"></div>
 						<div class="card-body">
@@ -97,7 +99,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 						</div>
 					</a>
 
-					<a class="card" href="/blog">
+					<a class="card" href="/gallery">
 						<div class="card-bg" style="background-image: url('/wildlife.jpg')"></div>
 						<div class="card-shade"></div>
 						<div class="card-body">
@@ -134,7 +136,62 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		}, SECONDS_PER_SLIDE * 1000);
 	}
 </script>
+<script>
+	import { gsap } from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+	gsap.registerPlugin(ScrollTrigger);
+
+	if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		// Everything below is tied to scroll position: scroll down and it plays,
+		// scroll back up and it rewinds. "scrub" is the smoothing in seconds (higher = softer).
+
+		// Heading row: eyebrow and title rise, "View all" slides in from the right.
+		// Plays from when the row is just peeking in until it's about 55% of the way up the screen.
+		gsap
+			.timeline({
+				scrollTrigger: {
+					trigger: '.section-header',
+					start: 'top 95%',
+					end: 'top 55%',
+					scrub: 0.8,
+				},
+			})
+			.fromTo('.section-eyebrow', { y: 40, opacity: 0 }, { y: 0, opacity: 1, ease: 'none' }, 0)
+			.fromTo('.section-title', { y: 40, opacity: 0 }, { y: 0, opacity: 1, ease: 'none' }, 0.15)
+			.fromTo('.view-all', { x: 80, opacity: 0 }, { x: 0, opacity: 1, ease: 'none' }, 0.3);
+
+		// Cards: each one rises in, its photo settles from zoomed in, then its text follows.
+		// Plays from when the top of the card enters the screen until it's 35% of the way down it,
+		// so it's only finished once you're properly looking at the card.
+		const wide = window.innerWidth > 900;
+		document.querySelectorAll<HTMLElement>('.card').forEach((card, i) => {
+			const photo = card.querySelector<HTMLElement>('.card-bg')!;
+			const parts = card.querySelectorAll('.card-body > *');
+			const d = wide ? i * 0.12 : 0; // side-by-side cards start one after another
+
+			gsap
+				.timeline({
+					scrollTrigger: {
+						trigger: card,
+						start: 'top 95%',
+						end: 'top 35%',
+						scrub: 0.8,
+					},
+				})
+				.fromTo(card, { opacity: 0, y: 100 }, { opacity: 1, y: 0, duration: 0.6, ease: 'none' }, d)
+				.fromTo(photo, { '--s': 1.25 }, { '--s': 1, duration: 1, ease: 'none' }, d)
+				.fromTo(
+					parts,
+					{ opacity: 0, y: 24 },
+					{ opacity: 1, y: 0, duration: 0.5, ease: 'none', stagger: 0.08 },
+					d + 0.35
+				);
+		});
+
+		window.addEventListener('load', () => ScrollTrigger.refresh());
+	}
+</script>
 <style>
 	@media (prefers-reduced-motion: no-preference) {
 		:global(html) {
