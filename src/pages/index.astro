@@ -113,6 +113,75 @@ import Intro from '../components/Intro.astro';
 					</a>
 				</div>
 			</section>
+						<section class="featured" aria-label="Featured photo">
+				<div class="featured-bg" style="background-image: url('/hero-4.jpg')"></div>
+				<div class="featured-shade"></div>
+				<div class="featured-text">
+					<p class="kicker">Featured</p>
+					<h2>Train on the cliff</h2>
+					<a class="more" href="/gallery">View in gallery →</a>
+				</div>
+			</section>
+
+			<section class="latest">
+				<div class="latest-head">
+					<p class="kicker">Latest work</p>
+					<h2>Fresh from the field</h2>
+				</div>
+				<div class="track-wrap">
+					<div class="track">
+						<a class="slide" href="/gallery?photo=hero-2">
+							<img src="/hero-2.jpg" alt="Whale spouts glowing in evening light" loading="lazy" decoding="async" />
+							<span>Whale spouts</span>
+						</a>
+						<a class="slide" href="/gallery?photo=hero-3">
+							<img src="/hero-3.jpg" alt="Spray aircraft flying above corn fields." loading="lazy" decoding="async" />
+							<span>Crop Duster</span>
+						</a>
+						<a class="slide" href="/gallery?photo=hero">
+							<img src="/hero.jpg" alt="River running through a forested mountain valley" loading="lazy" decoding="async" />
+							<span>River valley</span>
+						</a>
+						<a class="slide" href="/gallery?photo=hero-4">
+							<img src="/hero-4.jpg" alt="Passenger train on a cliffside track" loading="lazy" decoding="async" />
+							<span>Train on the cliff</span>
+						</a>
+						<a class="slide" href="/gallery?photo=wildlife">
+							<img src="/wildlife.jpg" alt="Wildlife photograph" loading="lazy" decoding="async" />
+							<span>Wildlife</span>
+						</a>
+						<a class="slide" href="/gallery?photo=nature">
+							<img src="/nature.jpg" alt="Nature photograph" loading="lazy" decoding="async" />
+							<span>Nature</span>
+						</a>
+					</div>
+				</div>
+			</section>
+			<section class="about-teaser">
+				<div class="about-photo">
+					<div
+						class="about-photo-img"
+						style="background-image: url('/about.jpg')"
+						role="img"
+						aria-label="Behr Carey"
+					></div>
+				</div>
+				<div class="about-copy">
+					<p class="kicker">About</p>
+					<h2>Hi, I’m Behr.</h2>
+					<p class="about-text">
+						Capturing the beauty of aviation, nature, and wildlife, one moment at a time.
+					</p>
+					<a class="more" href="/about">More about me →</a>
+				</div>
+			</section>
+			<section class="closing">
+				<h2>Every photo, in one place.</h2>
+				<a class="button" href="/gallery">
+					<span class="label">Open the gallery</span>
+					<span class="arrow" aria-hidden="true">→</span>
+				</a>
+			</section>
 		</main>
 		<Footer />
 	</body>
@@ -141,7 +210,12 @@ import Intro from '../components/Intro.astro';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 	gsap.registerPlugin(ScrollTrigger);
-
+	// Each "Latest work" slide links to its own photo in the gallery, built from its image file name
+	document.querySelectorAll<HTMLAnchorElement>('.slide').forEach((slide) => {
+		const src = slide.querySelector('img')?.getAttribute('src') ?? '';
+		const id = src.replace(/^\//, '').replace(/\.[^.]+$/, '');
+		if (id) slide.href = `/gallery?photo=${id}`;
+	});
 	if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
 		// Everything below is tied to scroll position: scroll down and it plays,
 		// scroll back up and it rewinds. "scrub" is the smoothing in seconds (higher = softer).
@@ -188,6 +262,106 @@ import Intro from '../components/Intro.astro';
 					d + 0.35
 				);
 		});
+
+		window.addEventListener('load', () => ScrollTrigger.refresh());
+	}
+</script>
+<script>
+	import { gsap } from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+	gsap.registerPlugin(ScrollTrigger);
+
+	if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		// Featured photo: drifts slowly behind the section, and the text rises in as you reach it
+		gsap.fromTo(
+			'.featured-bg',
+			{ yPercent: -8 },
+			{
+				yPercent: 8,
+				ease: 'none',
+				scrollTrigger: { trigger: '.featured', start: 'top bottom', end: 'bottom top', scrub: true },
+			}
+		);
+		gsap.fromTo(
+			'.featured-text > *',
+			{ y: 40, opacity: 0 },
+			{
+				y: 0,
+				opacity: 1,
+				ease: 'none',
+				stagger: 0.12,
+				scrollTrigger: { trigger: '.featured', start: 'top 60%', end: 'top 15%', scrub: 0.8 },
+			}
+		);
+
+		// Latest work: the page pauses on this section and the photos slide sideways as you scroll
+		const latest = document.querySelector<HTMLElement>('.latest');
+		const track = document.querySelector<HTMLElement>('.track');
+		if (latest && track) {
+			latest.classList.add('pin');
+						// measure to the right edge of the last photo, so the scroll stops exactly when it arrives
+			const distance = () => {
+				const last = track.lastElementChild as HTMLElement;
+				const pad = parseFloat(getComputedStyle(track).paddingRight);
+				return Math.max(last.offsetLeft + last.offsetWidth + pad - document.documentElement.clientWidth, 0);
+			};
+			gsap.to(track, {
+				x: () => -distance(),
+				ease: 'none',
+				scrollTrigger: {
+					trigger: latest,
+					start: 'top top',
+					end: () => `+=${distance()}`,
+					pin: true,
+					scrub: 0.8,
+					invalidateOnRefresh: true,
+					anticipatePin: 1,
+				},
+			});
+		}
+			// About teaser: the photo reveals upward as you scroll, the picture settles, then the text rises
+		gsap.fromTo(
+			'.about-photo',
+			{ clipPath: 'inset(100% 0% 0% 0% round 16px)' },
+			{
+				clipPath: 'inset(0% 0% 0% 0% round 16px)',
+				ease: 'none',
+				scrollTrigger: { trigger: '.about-teaser', start: 'top 85%', end: 'top 30%', scrub: 0.8 },
+			}
+		);
+		gsap.fromTo(
+			'.about-photo-img',
+			{ scale: 1.25 },
+			{
+				scale: 1,
+				ease: 'none',
+				scrollTrigger: { trigger: '.about-teaser', start: 'top 85%', end: 'top 15%', scrub: 0.8 },
+			}
+		);
+		gsap.fromTo(
+			'.about-copy > *',
+			{ y: 40, opacity: 0 },
+			{
+				y: 0,
+				opacity: 1,
+				ease: 'none',
+				stagger: 0.12,
+				scrollTrigger: { trigger: '.about-teaser', start: 'top 70%', end: 'top 25%', scrub: 0.8 },
+			}
+		);
+		// Closing line: rises in as it scrolls into view
+		gsap.fromTo(
+			'.closing > *',
+			{ y: 40, opacity: 0 },
+			{
+				y: 0,
+				opacity: 1,
+				ease: 'none',
+				stagger: 0.15,
+				scrollTrigger: { trigger: '.closing', start: 'top 90%', end: 'top 45%', scrub: 0.8 },
+			}
+		);
 
 		window.addEventListener('load', () => ScrollTrigger.refresh());
 	}
@@ -552,6 +726,209 @@ import Intro from '../components/Intro.astro';
 		}
 		.card {
 			min-height: 420px;
+		}
+	}
+		/* Featured photo: full width, with the picture drifting slowly behind the text */
+	.featured {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		align-items: flex-end;
+		height: 90vh;
+		min-height: 480px;
+		overflow: hidden;
+	}
+	.featured-bg {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: -15%;
+		bottom: -15%;
+		background-size: cover;
+		background-position: center;
+	}
+	.featured-shade {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, rgba(10, 14, 25, 0.9), rgba(10, 14, 25, 0) 60%);
+	}
+	.featured-text {
+		position: relative;
+		padding: 0 6vw 4rem;
+	}
+	.featured-text h2 {
+		margin: 0 0 1rem;
+		font-size: clamp(2rem, 5vw, 3.5rem);
+		line-height: 1.05;
+		color: white;
+	}
+
+	.kicker {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin: 0 0 0.75rem;
+		font-size: 0.75rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.6);
+	}
+	.kicker::after {
+		content: '';
+		width: 120px;
+		height: 1px;
+		background: rgba(255, 255, 255, 0.3);
+	}
+	.more {
+		color: rgba(255, 255, 255, 0.85);
+		font-size: 0.75rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		text-decoration: none;
+		transition: color 0.2s ease;
+	}
+	.more:hover {
+		color: white;
+	}
+
+	/* Latest work: a row of photos that slides sideways as you scroll down */
+	.latest {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 2.5rem;
+		padding: 5rem 0;
+	}
+	.latest-head {
+		padding: 0 6vw;
+	}
+	.latest-head h2 {
+		margin: 0;
+		font-size: clamp(1.6rem, 3vw, 2.2rem);
+		color: white;
+	}
+	.track-wrap {
+		overflow-x: auto; /* plain sideways scrolling if the animation is off */
+	}
+	.track {
+		display: flex;
+		align-items: flex-start;
+		gap: 1.5rem;
+		width: max-content;
+		padding: 0 6vw;
+	}
+	.slide {
+		position: relative;
+		flex: 0 0 clamp(260px, 30vw, 440px);
+		height: min(60vh, 520px);
+		overflow: hidden;
+		border-radius: 14px;
+		color: white;
+		text-decoration: none;
+	}
+	.slide:nth-child(even) {
+		margin-top: 3rem;
+	}
+		.slide img {
+		position: absolute;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.6s ease;
+	}
+	.slide:hover img {
+		transform: scale(1.05);
+	}
+	.slide span {
+		position: absolute;
+		left: 1.1rem;
+		bottom: 1rem;
+		font-size: 0.75rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+	}
+	/* When the scroll animation is running, the row is moved by scrolling instead */
+	.latest.pin {
+		height: 100vh;
+		padding: 0;
+	}
+	.latest.pin .track-wrap {
+		overflow: hidden;
+	}
+
+	/* Closing line */
+	.closing {
+		position: relative;
+		z-index: 1;
+		padding: 8rem 6vw 9rem;
+		text-align: center;
+	}
+	.closing h2 {
+		margin: 0 0 2rem;
+		font-size: clamp(2rem, 6vw, 4rem);
+		line-height: 1.05;
+		color: white;
+	}
+
+	@media (max-width: 900px) {
+		.featured {
+			height: 70vh;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.slide img {
+			transition: none;
+		}
+	}
+		/* About teaser */
+	.about-teaser {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+		gap: 5vw;
+		align-items: center;
+		padding: 7rem 6vw;
+	}
+	.about-photo {
+		width: 100%;
+		max-height: 80vh;
+		aspect-ratio: 4 / 5;
+		overflow: hidden;
+		border-radius: 16px;
+	}
+	.about-photo-img {
+		width: 100%;
+		height: 100%;
+		background-color: #111827;
+		background-size: cover;
+		background-position: center;
+	}
+	.about-copy h2 {
+		margin: 0 0 1.25rem;
+		font-size: clamp(2rem, 5vw, 3.5rem);
+		line-height: 1.05;
+		color: white;
+	}
+	.about-text {
+		max-width: 34rem;
+		margin: 0 0 1.75rem;
+		font-size: 1.05rem;
+		line-height: 1.7;
+		color: rgba(255, 255, 255, 0.75);
+	}
+	@media (max-width: 900px) {
+		.about-teaser {
+			grid-template-columns: 1fr;
+			padding: 5rem 6vw;
+		}
+		.about-photo {
+			max-width: 420px;
 		}
 	}
 </style>

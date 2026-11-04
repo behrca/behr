@@ -499,6 +499,18 @@ const items = await Promise.all(
 	document.addEventListener('dragstart', (e) => {
 		if ((e.target as HTMLElement).closest('.item, .lb-figure')) e.preventDefault();
 	});
+    	// Arriving from a link like /gallery?photo=hero-2 opens that photo straight away
+	const wanted = new URLSearchParams(window.location.search).get('photo');
+	if (wanted) {
+		const match = items.find(
+			(it) => (it.dataset.src ?? '').replace(/^\//, '').replace(/\.[^.]+$/, '') === wanted
+		);
+		if (match) {
+			openViewer(match);
+			// clean the address bar so a refresh doesn't reopen it
+			history.replaceState(null, '', window.location.pathname);
+		}
+	}
 </script>
 
 <style>
@@ -960,5 +972,41 @@ const items = await Promise.all(
 		.lb-nav {
 			transition: none;
 		}
+	}
+    	/* Light / dark mode */
+	main {
+		background: var(--site-bg);
+		color: var(--site-fg);
+	}
+	.eyebrow {
+		color: var(--site-fg-3);
+	}
+	.eyebrow::after {
+		background: var(--site-line);
+	}
+	h1 {
+		color: var(--site-fg);
+	}
+	.intro {
+		color: var(--site-fg-2);
+	}
+	.filter {
+		border-color: var(--site-line);
+		color: var(--site-fg);
+	}
+	.filter:hover {
+		border-color: var(--site-fg);
+	}
+	.filter.active {
+		background: var(--site-fg);
+		border-color: var(--site-fg);
+		color: var(--site-bg);
+	}
+	.filter:focus-visible,
+	.item:focus-visible {
+		outline-color: var(--site-fg);
+	}
+	.item {
+		background: var(--site-surface);
 	}
 </style>

@@ -1,24 +1,28 @@
 ---
 import HeaderLink from './HeaderLink.astro';
 import { SITE_TITLE } from '../consts';
+import ThemeToggle from './ThemeToggle.astro';
 
 // Pages where the header floats over a dark page instead of using the solid bar
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isOverlay = path === '/' || path === '/gallery';
 ---
 
-<header class:list={[{ overlay: isOverlay }]}>
+<header class:list={[{ overlay: isOverlay, 'over-photo': path === '/' }]}>
 	<nav>
 		<a href="/" class="brand">
 			<img src="/favicon.svg?v=10" alt="Behr Carey logo" width="32" height="32" />
 			<span class="divider">|</span>
 			<span>{SITE_TITLE}</span>
 		</a>
+
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
 			<HeaderLink href="/gallery">Gallery</HeaderLink>
 			<HeaderLink href="/about">About</HeaderLink>
 		</div>
+
+		<div class="nav-end"><ThemeToggle /></div>
 	</nav>
 </header>
 <style>
@@ -162,6 +166,55 @@ const isOverlay = path === '/' || path === '/gallery';
 			transition: none;
 		}
 	}
+	/* Light / dark mode */
+	.nav-end {
+		justify-self: end;
+	}
+	@media (max-width: 720px) {
+		.nav-end {
+			position: absolute;
+			top: 0.55rem;
+			right: 1em;
+		}
+	}
+
+	/* The floating header's colors come from three variables, so they can follow the theme */
+	header.overlay {
+		--nav-fg: #fff;
+		--nav-img: brightness(0) invert(1);
+		--nav-backdrop: rgba(10, 14, 25, 0.9);
+	}
+	header.overlay nav a,
+	header.overlay .brand,
+	header.overlay .brand span {
+		color: var(--nav-fg);
+	}
+	header.overlay .brand img {
+		filter: var(--nav-img);
+	}
+	header.overlay::before {
+		background: var(--nav-backdrop);
+	}
+	/* Light mode: dark text and a pale backdrop once pinned, and on the gallery (no photo behind the bar) */
+	:global(:root[data-theme='light']) header.overlay.is-fixed,
+	:global(:root[data-theme='light']) header.overlay:not(.over-photo) {
+		--nav-fg: #111827;
+		--nav-img: none;
+		--nav-backdrop: rgba(245, 243, 238, 0.92);
+	}
+	:global(:root[data-theme='light']) header.overlay.is-fixed {
+		background: none;
+	}
+	:global(:root[data-theme='light']) header.overlay:not(.over-photo):not(.is-fixed) {
+		background: linear-gradient(to bottom, rgba(245, 243, 238, 0.85), rgba(245, 243, 238, 0));
+	}
+	/* The About page's bar */
+	header:not(.overlay) nav a {
+		color: rgb(var(--black));
+	}
+	:global(:root[data-theme='dark']) header:not(.overlay) .brand img {
+		filter: brightness(0) invert(1);
+	}	
 </style>
 
 <script>

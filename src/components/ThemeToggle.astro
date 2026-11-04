@@ -1,0 +1,186 @@
+---
+// ThemeToggle.astro: round sun/moon button that switches light and dark mode.
+// The choice is saved in the browser, and the colors change as a ripple growing from the button.
+---
+
+<button
+	type="button"
+	class="theme-toggle"
+	id="theme-toggle"
+	aria-label="Switch to light mode"
+	title="Switch between light and dark mode"
+>
+	<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+		<defs>
+			<mask id="theme-moon-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+				<rect width="24" height="24" fill="#fff"></rect>
+				<circle class="cut" cx="12" cy="12" r="6.5" fill="#000"></circle>
+			</mask>
+		</defs>
+		<circle class="core" cx="12" cy="12" r="5" fill="currentColor" mask="url(#theme-moon-mask)"></circle>
+		<g class="rays" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+			<line x1="12" y1="2" x2="12" y2="4"></line>
+			<line x1="12" y1="2" x2="12" y2="4" transform="rotate(45 12 12)"></line>
+			<line x1="12" y1="2" x2="12" y2="4" transform="rotate(90 12 12)"></line>
+			<line x1="12" y1="2" x2="12" y2="4" transform="rotate(135 12 12)"></line>
+			<line x1="12" y1="2" x2="12" y2="4" transform="rotate(180 12 12)"></line>
+			<line x1="12" y1="2" x2="12" y2="4" transform="rotate(225 12 12)"></line>
+			<line x1="12" y1="2" x2="12" y2="4" transform="rotate(270 12 12)"></line>
+			<line x1="12" y1="2" x2="12" y2="4" transform="rotate(315 12 12)"></line>
+		</g>
+	</svg>
+</button>
+
+<script>
+	const root = document.documentElement;
+	const btn = document.getElementById('theme-toggle') as HTMLButtonElement;
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const deviceDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+	const current = () => (root.dataset.theme === 'light' ? 'light' : 'dark');
+
+	function apply(theme: 'light' | 'dark') {
+		root.dataset.theme = theme;
+		btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+	}
+	apply(current());
+
+	btn.addEventListener('click', () => {
+		const next = current() === 'dark' ? 'light' : 'dark';
+		try {
+			localStorage.setItem('theme', next);
+		} catch {}
+
+		const doc = document as any;
+
+		// Browsers that can't do the ripple (or visitors who prefer less motion): a soft fade
+		if (!doc.startViewTransition || reduceMotion) {
+			if (!reduceMotion) {
+				root.classList.add('theme-fade');
+				window.setTimeout(() => root.classList.remove('theme-fade'), 500);
+			}
+			apply(next);
+			return;
+		}
+
+		// The new colors grow out of the button like a ripple
+		const box = btn.getBoundingClientRect();
+		const x = box.left + box.width / 2;
+		const y = box.top + box.height / 2;
+		const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+
+		const transition = doc.startViewTransition(() => apply(next));
+		transition.ready.then(() => {
+			root.animate(
+				{ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+				{
+					duration: 750,
+					easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
+					pseudoElement: '::view-transition-new(root)',
+				}
+			);
+		});
+	});
+
+	// If the visitor never chose, keep following their device setting
+	deviceDark.addEventListener('change', (e) => {
+		try {
+			if (localStorage.getItem('theme')) return;
+		} catch {}
+		apply(e.matches ? 'dark' : 'light');
+	});
+</script>
+
+<style>
+	.theme-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		padding: 0;
+		border: 1.5px solid currentColor;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--nav-fg, rgb(var(--black)));
+		cursor: pointer;
+		opacity: 0.85;
+		transition:
+			opacity 0.25s ease,
+			transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+	.theme-toggle:hover,
+	.theme-toggle:focus-visible {
+		opacity: 1;
+		transform: scale(1.08);
+	}
+	.theme-toggle:active {
+		transform: scale(0.92);
+	}
+	.theme-toggle:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: 3px;
+	}
+
+	/* Sun (light mode): bright disc, rays out, nothing cutting into it */
+	.core {
+		transform-box: view-box;
+		transform-origin: 12px 12px;
+		transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+	.cut {
+		transform: translate(14px, -14px);
+		transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+	.rays {
+		transform-box: view-box;
+		transform-origin: 12px 12px;
+		transition:
+			transform 0.6s cubic-bezier(0.65, 0, 0.35, 1),
+			opacity 0.4s ease;
+	}
+
+	/* Moon (dark mode): the disc grows, a circle slides over it to make a crescent, rays fold away */
+	:global(html[data-theme='dark']) .core {
+		transform: scale(1.5);
+	}
+	:global(html[data-theme='dark']) .cut {
+		transform: translate(5px, -5px);
+	}
+	:global(html[data-theme='dark']) .rays {
+		transform: rotate(-90deg) scale(0);
+		opacity: 0;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.theme-toggle,
+		.core,
+		.cut,
+		.rays {
+			transition: none;
+		}
+	}
+</style>
+
+<style is:global>
+	/* Lets the new theme reveal itself as a circle instead of the browser's default cross-fade */
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation: none;
+		mix-blend-mode: normal;
+	}
+	::view-transition-old(root) {
+		z-index: 1;
+	}
+	::view-transition-new(root) {
+		z-index: 2147483646;
+	}
+
+	/* Fallback for browsers without that feature */
+	html.theme-fade :not(.theme-toggle, .theme-toggle *) {
+		transition:
+			background-color 0.45s ease,
+			color 0.45s ease,
+			border-color 0.45s ease !important;
+	}
+</style>
