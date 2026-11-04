@@ -16,6 +16,13 @@
 	--box-shadow:
 		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
 		0 16px 32px rgba(var(--gray), 33%);
+			--site-bg: #f5f3ee;
+	--site-bg-rgb: 245, 243, 238;
+	--site-surface: #e7e3da;
+	--site-fg: #111827;
+	--site-fg-2: rgba(17, 24, 39, 0.75);
+	--site-fg-3: rgba(17, 24, 39, 0.6);
+	--site-line: rgba(17, 24, 39, 0.3);
 }
 @font-face {
 	font-family: "Atkinson";
@@ -162,18 +169,27 @@ hr {
 	white-space: nowrap;
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--accent: #7c8cff;
-		--accent-dark: #a9b4ff;
-		 --page-bg: #12151c;
-		--black: 240, 242, 248;
-		--gray: 160, 172, 200;
-		--gray-light: 45, 52, 68;
-		--gray-dark: 220, 225, 235;
-		--gray-gradient: rgba(var(--gray-light), 50%), #12151c;
-	}
-	body {
-		background-color: #12151c;
-	}
+:root {
+	color-scheme: light;
+}
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--accent: #7c8cff;
+	--accent-dark: #a9b4ff;
+	--page-bg: #12151c;
+	--black: 240, 242, 248;
+	--gray: 160, 172, 200;
+	--gray-light: 45, 52, 68;
+	--gray-dark: 220, 225, 235;
+	--gray-gradient: rgba(var(--gray-light), 50%), #12151c;
+	--site-bg: #0a0e19;
+	--site-bg-rgb: 10, 14, 25;
+	--site-surface: #111827;
+	--site-fg: #ffffff;
+	--site-fg-2: rgba(255, 255, 255, 0.75);
+	--site-fg-3: rgba(255, 255, 255, 0.6);
+	--site-line: rgba(255, 255, 255, 0.3);
+}
+:root[data-theme='dark'] body {
+	background-color: #12151c;
 }

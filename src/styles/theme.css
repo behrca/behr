@@ -1,0 +1,198 @@
+/*
+  theme.css: light / dark colors for the home page, the header, and the photo viewer.
+  The ":root[data-theme]" at the start of every rule makes it win over each
+  page's own styles, no matter where or how those are written.
+*/
+
+/* ---------- Home page: background ---------- */
+:root[data-theme] main.home,
+:root[data-theme] main:has(> .page-bg) {
+	background: var(--site-bg);
+}
+:root[data-theme] .latest,
+:root[data-theme] .about-teaser,
+:root[data-theme] .closing {
+	background: var(--site-bg);
+}
+
+/* The hero photo fades into the page color as you scroll down */
+:root[data-theme] .fade {
+	background: linear-gradient(
+		to bottom,
+		rgba(var(--site-bg-rgb), 0) 0%,
+		rgba(var(--site-bg-rgb), 0.05) 30%,
+		rgba(var(--site-bg-rgb), 0.6) 65%,
+		var(--site-bg) 100%
+	);
+}
+
+/* ---------- Home page: hero in light mode ---------- */
+/* Light mode: keep the photo clear behind the headline, then dissolve to the page color.
+   (This rule must stay below the one above.) */
+:root[data-theme='light'] .fade {
+	background: linear-gradient(
+		to bottom,
+		rgba(var(--site-bg-rgb), 0) 0%,
+		rgba(var(--site-bg-rgb), 0) 42%,
+		rgba(var(--site-bg-rgb), 0.75) 62%,
+		var(--site-bg) 70%
+	);
+}
+/* A pale wash on the left instead of a dark one, so dark text stays readable.
+   Raise 0.82 for a stronger wash, lower it to see more of the photo. */
+:root[data-theme='light'] .overlay {
+	background: linear-gradient(
+		to right,
+		rgba(var(--site-bg-rgb), 0.82),
+		rgba(var(--site-bg-rgb), 0) 75%
+	);
+}
+:root[data-theme='light'] .hero .eyebrow,
+:root[data-theme='light'] .hero h1,
+:root[data-theme='light'] .hero .tagline {
+	color: var(--site-fg);
+}
+:root[data-theme='light'] .hero .word {
+	color: #2b5fc4;
+}
+:root[data-theme='light'] .hero .button {
+	border-color: var(--site-fg);
+	color: var(--site-fg);
+}
+:root[data-theme='light'] .hero .button::before {
+	background: var(--site-fg);
+}
+:root[data-theme='light'] .hero .button:hover,
+:root[data-theme='light'] .hero .button:focus-visible {
+	color: var(--site-bg);
+}
+:root[data-theme='light'] .scroll-cue {
+	color: var(--site-fg);
+	border-color: rgba(17, 24, 39, 0.6);
+}
+:root[data-theme='light'] .scroll-cue:hover {
+	background: rgba(17, 24, 39, 0.08);
+}
+
+/* ---------- Home page: headings and links ---------- */
+:root[data-theme] .section-eyebrow,
+:root[data-theme] .kicker {
+	color: var(--site-fg-3);
+}
+:root[data-theme] .section-eyebrow::after,
+:root[data-theme] .kicker::after {
+	background: var(--site-line);
+}
+:root[data-theme] .section-title,
+:root[data-theme] .latest-head h2,
+:root[data-theme] .about-copy h2,
+:root[data-theme] .closing h2 {
+	color: var(--site-fg);
+}
+:root[data-theme] .view-all,
+:root[data-theme] .more {
+	color: var(--site-fg-2);
+}
+:root[data-theme] .view-all:hover,
+:root[data-theme] .more:hover {
+	color: var(--site-fg);
+}
+:root[data-theme] .about-text {
+	color: var(--site-fg-2);
+}
+:root[data-theme] .about-photo-img {
+	background-color: var(--site-surface);
+}
+:root[data-theme] .card:focus-visible {
+	outline-color: var(--site-fg);
+}
+
+/* The featured photo's text sits on a photo, so it stays light in both themes */
+:root[data-theme] .featured-text .kicker {
+	color: rgba(255, 255, 255, 0.7);
+}
+:root[data-theme] .featured-text .kicker::after {
+	background: rgba(255, 255, 255, 0.3);
+}
+:root[data-theme] .featured-text .more {
+	color: rgba(255, 255, 255, 0.85);
+}
+:root[data-theme] .featured-text .more:hover {
+	color: #fff;
+}
+
+/* The closing button sits on the page background, not a photo */
+:root[data-theme] .closing .button {
+	border-color: var(--site-fg);
+	color: var(--site-fg);
+}
+:root[data-theme] .closing .button::before {
+	background: var(--site-fg);
+}
+:root[data-theme] .closing .button:hover,
+:root[data-theme] .closing .button:focus-visible {
+	color: var(--site-bg);
+}
+
+/* ---------- Floating header (home and gallery) in light mode ---------- */
+:root[data-theme='light'] header.overlay {
+	--nav-fg: #111827;
+	--nav-img: none;
+	--nav-backdrop: rgba(245, 243, 238, 0.92);
+}
+:root[data-theme='light'] header.overlay:not(.is-fixed) {
+	background: linear-gradient(to bottom, rgba(245, 243, 238, 0.85), rgba(245, 243, 238, 0));
+}
+:root[data-theme='light'] header.overlay.is-fixed {
+	background: none;
+}
+
+/* ---------- Gallery photo viewer in light mode ---------- */
+/* Every rule starts with ".lightbox" so it always outranks the gallery page's own styles */
+:root[data-theme='light'] .lightbox {
+	background: rgba(245, 243, 238, 0.96);
+}
+:root[data-theme='light'] .lightbox .lb-figure {
+	background: #ebe7de;
+}
+:root[data-theme='light'] .lightbox .lb-info {
+	background: #ffffff;
+	border-color: rgba(17, 24, 39, 0.1);
+}
+:root[data-theme='light'] .lightbox .lb-info h2 {
+	color: #111827;
+}
+:root[data-theme='light'] .lightbox .lb-info p {
+	color: rgba(17, 24, 39, 0.75);
+}
+:root[data-theme='light'] .lightbox .lb-block h3 {
+	color: rgba(17, 24, 39, 0.55);
+}
+:root[data-theme='light'] .lightbox .lb-info .rows,
+:root[data-theme='light'] .lightbox .lb-info .specs {
+	background: rgba(17, 24, 39, 0.05);
+}
+:root[data-theme='light'] .lightbox .lb-info .specs {
+	color: #111827;
+}
+:root[data-theme='light'] .lightbox .lb-info .rows li + li {
+	border-top-color: rgba(17, 24, 39, 0.1);
+}
+:root[data-theme='light'] .lightbox .lb-info .rows span {
+	color: rgba(17, 24, 39, 0.55);
+}
+:root[data-theme='light'] .lightbox .lb-info .rows strong {
+	color: #111827;
+}
+:root[data-theme='light'] .lightbox .lb-close,
+:root[data-theme='light'] .lightbox .lb-nav {
+	border-color: rgba(17, 24, 39, 0.4);
+	color: #111827;
+}
+:root[data-theme='light'] .lightbox .lb-close:hover,
+:root[data-theme='light'] .lightbox .lb-nav:hover,
+:root[data-theme='light'] .lightbox .lb-close:focus-visible,
+:root[data-theme='light'] .lightbox .lb-nav:focus-visible {
+	background: #111827;
+	color: #f5f3ee;
+}

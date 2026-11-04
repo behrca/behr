@@ -1009,4 +1009,52 @@ const items = await Promise.all(
 	.item {
 		background: var(--site-surface);
 	}
+    	/* Photo viewer in light mode */
+	:global(:root[data-theme='light']) .lightbox {
+		background: rgba(245, 243, 238, 0.96);
+	}
+	:global(:root[data-theme='light']) .lightbox .lb-figure {
+		background: #ebe7de;
+	}
+	:global(:root[data-theme='light']) .lightbox .lb-info {
+		background: #ffffff;
+		border-color: rgba(17, 24, 39, 0.1);
+	}
+	:global(:root[data-theme='light']) .lightbox .lb-info h2 {
+		color: #111827;
+	}
+	:global(:root[data-theme='light']) .lightbox .lb-info p {
+		color: rgba(17, 24, 39, 0.75);
+	}
+	:global(:root[data-theme='light']) .lightbox .lb-block h3 {
+		color: rgba(17, 24, 39, 0.55);
+	}
+	:global(:root[data-theme='light']) .lightbox .rows,
+	:global(:root[data-theme='light']) .lightbox .specs {
+		background: rgba(17, 24, 39, 0.05);
+	}
+	:global(:root[data-theme='light']) .lightbox .specs {
+		color: #111827;
+	}
+	:global(:root[data-theme='light']) .lightbox .rows :global(li + li) {
+		border-top-color: rgba(17, 24, 39, 0.1);
+	}
+	:global(:root[data-theme='light']) .lightbox .rows :global(span) {
+		color: rgba(17, 24, 39, 0.55);
+	}
+	:global(:root[data-theme='light']) .lightbox .rows :global(strong) {
+		color: #111827;
+	}
+	:global(:root[data-theme='light']) .lightbox .lb-close,
+	:global(:root[data-theme='light']) .lightbox .lb-nav {
+		border-color: rgba(17, 24, 39, 0.4);
+		color: #111827;
+	}
+	:global(:root[data-theme='light']) .lightbox .lb-close:hover,
+	:global(:root[data-theme='light']) .lightbox .lb-nav:hover,
+	:global(:root[data-theme='light']) .lightbox .lb-close:focus-visible,
+	:global(:root[data-theme='light']) .lightbox .lb-nav:focus-visible {
+		background: #111827;
+		color: #f5f3ee;
+	}
 </style>

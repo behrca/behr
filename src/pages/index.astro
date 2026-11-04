@@ -14,7 +14,7 @@ import Intro from '../components/Intro.astro';
 	<body>
 	  <Intro />
 		<Header />
-		<main>
+		<main class="home">
 			<div class="page-bg">
 				<div class="backgrounds">
 					<div class="bg active" style="background-image: url('/hero.jpg')"></div>
@@ -183,6 +183,9 @@ import Intro from '../components/Intro.astro';
 				</a>
 			</section>
 		</main>
+				<div class="copyright-tip" id="copyright-tip" role="status" aria-live="polite">
+			© Behr Carey. All rights reserved.
+		</div>
 		<Footer />
 	</body>
 </html>
@@ -365,6 +368,30 @@ import Intro from '../components/Intro.astro';
 
 		window.addEventListener('load', () => ScrollTrigger.refresh());
 	}
+</script>
+<script>
+	const tip = document.getElementById('copyright-tip') as HTMLElement;
+	let tipTimer: number | undefined;
+
+	function showTip(x: number, y: number) {
+		const half = tip.offsetWidth / 2 + 12;
+		tip.style.left = `${Math.min(Math.max(x, half), window.innerWidth - half)}px`;
+		tip.style.top = `${Math.max(y - 16, tip.offsetHeight + 16)}px`;
+		tip.classList.add('show');
+		window.clearTimeout(tipTimer);
+		tipTimer = window.setTimeout(() => tip.classList.remove('show'), 2200);
+	}
+
+	document.addEventListener('contextmenu', (e) => {
+		if ((e.target as HTMLElement).closest('.slide')) {
+			e.preventDefault();
+			showTip(e.clientX, e.clientY);
+		}
+	});
+	// stop photos from being dragged out of the page onto the desktop
+	document.addEventListener('dragstart', (e) => {
+		if ((e.target as HTMLElement).closest('.slide')) e.preventDefault();
+	});
 </script>
 <style>
 	@media (prefers-reduced-motion: no-preference) {
@@ -929,6 +956,139 @@ import Intro from '../components/Intro.astro';
 		}
 		.about-photo {
 			max-width: 420px;
+		}
+	}
+	/* Light / dark mode: these override the colors above so the page follows the theme */
+	main {
+		background: var(--site-bg);
+	}
+	.fade {
+		background: linear-gradient(
+			to bottom,
+			rgba(var(--site-bg-rgb), 0) 0%,
+			rgba(var(--site-bg-rgb), 0.05) 30%,
+			rgba(var(--site-bg-rgb), 0.6) 65%,
+			var(--site-bg) 100%
+		);
+	}
+	/* Light mode: keep the photo clear behind the headline, then dissolve to the page color */
+	:global(:root[data-theme='light']) .fade {
+		background: linear-gradient(
+			to bottom,
+			rgba(var(--site-bg-rgb), 0) 0%,
+			rgba(var(--site-bg-rgb), 0) 42%,
+			rgba(var(--site-bg-rgb), 0.75) 62%,
+			var(--site-bg) 70%
+		);
+	}
+	:global(:root[data-theme='light']) .scroll-cue {
+		color: var(--site-fg);
+		border-color: rgba(17, 24, 39, 0.6);
+	}
+	:global(:root[data-theme='light']) .scroll-cue:hover {
+		background: rgba(17, 24, 39, 0.08);
+	}
+
+	.section-eyebrow,
+	.kicker {
+		color: var(--site-fg-3);
+	}
+	.section-eyebrow::after,
+	.kicker::after {
+		background: var(--site-line);
+	}
+	.section-title,
+	.latest-head h2,
+	.about-copy h2,
+	.closing h2 {
+		color: var(--site-fg);
+	}
+	.view-all,
+	.more {
+		color: var(--site-fg-2);
+	}
+	.view-all:hover,
+	.more:hover {
+		color: var(--site-fg);
+	}
+	.about-text {
+		color: var(--site-fg-2);
+	}
+	.about-photo-img {
+		background-color: var(--site-surface);
+	}
+	.card:focus-visible {
+		outline-color: var(--site-fg);
+	}
+
+	/* The featured photo's text sits on a photo, so it stays light in both themes */
+	.featured-text .kicker {
+		color: rgba(255, 255, 255, 0.7);
+	}
+	.featured-text .kicker::after {
+		background: rgba(255, 255, 255, 0.3);
+	}
+	.featured-text .more {
+		color: rgba(255, 255, 255, 0.85);
+	}
+	.featured-text .more:hover {
+		color: #fff;
+	}
+
+	/* The closing button sits on the page background, not a photo */
+	.closing .button {
+		border-color: var(--site-fg);
+		color: var(--site-fg);
+	}
+	.closing .button::before {
+		background: var(--site-fg);
+	}
+	.closing .button:hover,
+	.closing .button:focus-visible {
+		color: var(--site-bg);
+	}	
+		/* Stops the Latest work photos from being dragged out or saved from the long-press menu */
+	.slide,
+	.slide img {
+		-webkit-user-drag: none;
+		-webkit-touch-callout: none;
+		user-select: none;
+	}
+
+	/* Copyright notice shown when someone right-clicks a photo */
+	.copyright-tip {
+		position: fixed;
+		z-index: 200;
+		padding: 0.7rem 1.1rem;
+		border-radius: 8px;
+		background: #1a1d24;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+		color: white;
+		font-size: 0.9rem;
+		white-space: nowrap;
+		opacity: 0;
+		transform: translate(-50%, calc(-100% + 6px));
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease;
+		pointer-events: none;
+	}
+	.copyright-tip::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 7px solid transparent;
+		border-top-color: #1a1d24;
+	}
+	.copyright-tip.show {
+		opacity: 1;
+		transform: translate(-50%, -100%);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.copyright-tip {
+			transition: none;
 		}
 	}
 </style>

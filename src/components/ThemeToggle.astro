@@ -43,6 +43,14 @@
 		root.dataset.theme = theme;
 		btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
 	}
+		// Normally the script in <head> has already set the theme. If it didn't, work it out here.
+	if (!root.dataset.theme) {
+		let saved: string | null = null;
+		try {
+			saved = localStorage.getItem('theme');
+		} catch {}
+		root.dataset.theme = saved === 'light' || saved === 'dark' ? saved : deviceDark.matches ? 'dark' : 'light';
+	}
 	apply(current());
 
 	btn.addEventListener('click', () => {
