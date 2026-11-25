@@ -44,7 +44,7 @@
 		tip.style.top = `${top + window.scrollY}px`;
 		tip.classList.add('show');
 		window.clearTimeout(tipTimer);
-		tipTimer = window.setTimeout(() => tip.classList.remove('show'), 1800);
+		tipTimer = window.setTimeout(() => tip.classList.remove('show'), 1000); // on screen for 1 second
 	}
 
 	document.addEventListener('contextmenu', (e) => {
