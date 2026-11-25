@@ -3,12 +3,19 @@ import HeaderLink from './HeaderLink.astro';
 import { SITE_TITLE } from '../consts';
 import ThemeToggle from './ThemeToggle.astro';
 
-// Pages where the header floats over a dark page instead of using the solid bar
+// Pages where the header floats over a dark page instead of using the solid bar.
+// A page can also ask for it directly: <Header overPhoto /> floats it over a full-screen photo
+// (used by the "page not found" page, whose address could be anything).
+interface Props {
+	overPhoto?: boolean;
+}
+const { overPhoto = false } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
-const isOverlay = path === '/' || path === '/gallery' || path === '/about';
+const isOverlay = overPhoto || path === '/' || path === '/gallery' || path === '/about';
+const isOverPhoto = overPhoto || path === '/';
 ---
 
-<header class:list={[{ overlay: isOverlay, 'over-photo': path === '/' }]}>
+<header class:list={[{ overlay: isOverlay, 'over-photo': isOverPhoto }]}>
 	<nav>
 		<a href="/" class="brand">
 			<span class="brand-mark" role="img" aria-label="Behr Carey logo"></span>

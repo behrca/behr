@@ -58,3 +58,13 @@ const { title, description, image = '/hero.jpg' } = Astro.props;
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
+
+<!-- Offline page: lets the browser show "Lost the signal" (/offline.html) to returning
+     visitors who open the site without internet. See /public/sw.js. -->
+<script is:inline>
+	if ('serviceWorker' in navigator) {
+		window.addEventListener('load', function () {
+			navigator.serviceWorker.register('/sw.js').catch(function () {});
+		});
+	}
+</script>

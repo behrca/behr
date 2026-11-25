@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>No connection | Behr Carey</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<!--
+			Shown by the service worker (/sw.js) when someone who has visited before opens the
+			site without an internet connection. Everything it needs is saved ahead of time,
+			so it has no outside fonts or scripts; the photo is /offline-photo.jpg.
+		-->
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+			html,
+			body {
+				margin: 0;
+				height: 100%;
+				background: #0a0e19;
+				color: #fff;
+				font-family: 'Inter Variable', 'Inter', -apple-system, system-ui, sans-serif;
+				-webkit-font-smoothing: antialiased;
+			}
+			body {
+				position: relative;
+				display: grid;
+				place-items: center;
+				min-height: 100svh;
+				padding: 2rem 6vw;
+				overflow: hidden;
+			}
+			/* fixed to the screen, so its extra blurred edge never makes the page scroll sideways */
+			.photo {
+				position: fixed;
+				inset: -40px;
+				background: #0a0e19 url('/offline-photo.jpg') center / cover;
+				filter: blur(14px) saturate(0.4) brightness(0.7);
+				animation: lose-signal 2.2s cubic-bezier(0.45, 0, 0.2, 1) both;
+			}
+			/* the picture fades and loses its color, like the feed cutting out */
+			@keyframes lose-signal {
+				from {
+					filter: blur(4px) saturate(1) brightness(1);
+				}
+			}
+			.shade {
+				position: fixed;
+				inset: 0;
+				background: radial-gradient(ellipse at center, rgba(10, 14, 25, 0.3), rgba(10, 14, 25, 0.85) 80%);
+			}
+			.brand {
+				position: absolute;
+				top: 1.6rem;
+				left: 6vw;
+				font-family: 'Optima', 'Zapf Humanist 601', 'Candara', sans-serif;
+				font-size: 0.95rem;
+				letter-spacing: 0.3em;
+				text-transform: uppercase;
+				color: rgba(255, 255, 255, 0.85);
+			}
+			.viewfinder {
+				position: relative;
+				width: min(720px, 100%);
+				min-height: min(420px, 70vh);
+				display: grid;
+				place-items: center;
+				padding: 3.5rem 2rem 4.5rem;
+				text-align: center;
+			}
+			.corner {
+				position: absolute;
+				width: 34px;
+				height: 34px;
+				border: 0 solid rgba(255, 255, 255, 0.6);
+			}
+			.tl {
+				top: 0;
+				left: 0;
+				border-top-width: 1.5px;
+				border-left-width: 1.5px;
+			}
+			.tr {
+				top: 0;
+				right: 0;
+				border-top-width: 1.5px;
+				border-right-width: 1.5px;
+			}
+			.bl {
+				bottom: 0;
+				left: 0;
+				border-bottom-width: 1.5px;
+				border-left-width: 1.5px;
+			}
+			.br {
+				bottom: 0;
+				right: 0;
+				border-bottom-width: 1.5px;
+				border-right-width: 1.5px;
+			}
+			.eyebrow {
+				margin: 0 0 1rem;
+				font-size: 0.72rem;
+				letter-spacing: 0.35em;
+				text-transform: uppercase;
+				color: rgba(255, 255, 255, 0.65);
+			}
+			h1 {
+				margin: 0 0 1rem;
+				font-weight: 300;
+				font-size: clamp(2.2rem, 6vw, 4rem);
+				line-height: 1.05;
+				letter-spacing: -0.03em;
+			}
+			p.text {
+				max-width: 30rem;
+				margin: 0 auto 2.25rem;
+				font-size: 1rem;
+				line-height: 1.7;
+				color: rgba(255, 255, 255, 0.8);
+			}
+			button {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.55rem;
+				padding: 0.8rem 1.4rem;
+				border: 1px solid rgba(255, 255, 255, 0.3);
+				border-radius: 999px;
+				background:
+					linear-gradient(to bottom, rgba(255, 255, 255, 0.28), transparent 70%),
+					rgba(255, 255, 255, 0.12);
+				-webkit-backdrop-filter: blur(14px) saturate(1.6);
+				backdrop-filter: blur(14px) saturate(1.6);
+				box-shadow:
+					inset 0 1px 0 rgba(255, 255, 255, 0.45),
+					0 8px 24px rgba(0, 0, 0, 0.2);
+				color: #fff;
+				font: inherit;
+				font-size: 0.78rem;
+				letter-spacing: 0.2em;
+				text-transform: uppercase;
+				cursor: pointer;
+				transition: transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+			}
+			button:hover,
+			button:focus-visible {
+				transform: scale(1.04);
+			}
+			button:focus-visible {
+				outline: 2px solid #fff;
+				outline-offset: 3px;
+			}
+			/* camera-style readout; the red dot blinks like a lost signal light */
+			.readout {
+				position: absolute;
+				left: 0;
+				right: 0;
+				bottom: 1.1rem;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				gap: 1.4rem;
+				font-size: 0.72rem;
+				letter-spacing: 0.12em;
+				font-variant-numeric: tabular-nums;
+				color: rgba(255, 255, 255, 0.7);
+			}
+			.dot {
+				width: 7px;
+				height: 7px;
+				border-radius: 50%;
+				background: #e5484d;
+				animation: blink 1.4s steps(1, end) infinite;
+			}
+			@keyframes blink {
+				50% {
+					opacity: 0.15;
+				}
+			}
+			.copy > * {
+				animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+			}
+			.copy > :nth-child(2) {
+				animation-delay: 0.1s;
+			}
+			.copy > :nth-child(3) {
+				animation-delay: 0.2s;
+			}
+			.copy > :nth-child(4) {
+				animation-delay: 0.3s;
+			}
+			@keyframes rise {
+				from {
+					opacity: 0;
+					transform: translateY(20px);
+				}
+			}
+			@media (max-width: 600px) {
+				.readout {
+					gap: 0.8rem;
+					font-size: 0.65rem;
+				}
+			}
+			@media (prefers-reduced-motion: reduce) {
+				.photo,
+				.copy > *,
+				.dot {
+					animation: none;
+				}
+				button {
+					transition: none;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="photo" aria-hidden="true"></div>
+		<div class="shade" aria-hidden="true"></div>
+		<div class="brand">Behr Carey</div>
+
+		<main class="viewfinder">
+			<span class="corner tl" aria-hidden="true"></span>
+			<span class="corner tr" aria-hidden="true"></span>
+			<span class="corner bl" aria-hidden="true"></span>
+			<span class="corner br" aria-hidden="true"></span>
+
+			<div class="copy">
+				<p class="eyebrow">No connection</p>
+				<h1>Lost the signal.</h1>
+				<p class="text">You’re offline right now. Once you’re back online, the photos will be right where you left them.</p>
+				<button type="button" onclick="location.reload()">Try again</button>
+			</div>
+
+			<div class="readout" aria-hidden="true">
+				<span class="dot"></span>
+				<span>NO SIGNAL</span>
+				<span>– – –</span>
+				<span>ISO – – –</span>
+			</div>
+		</main>
+
+		<script>
+			// Reload by itself as soon as the connection comes back
+			window.addEventListener('online', () => location.reload());
+		</script>
+	</body>
+</html>
