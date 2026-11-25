@@ -34,13 +34,17 @@
 		return document.elementsFromPoint(x, y).some(isPhoto);
 	}
 
+	// The notice is placed on the page itself (not fixed to the screen), so if you scroll,
+	// it scrolls away with the photo you clicked.
 	function showTip(x: number, y: number) {
 		const half = tip.offsetWidth / 2 + 12;
-		tip.style.left = `${Math.min(Math.max(x, half), window.innerWidth - half)}px`;
-		tip.style.top = `${Math.max(y - 16, tip.offsetHeight + 16)}px`;
+		const left = Math.min(Math.max(x, half), window.innerWidth - half);
+		const top = Math.max(y - 12, tip.offsetHeight + 12);
+		tip.style.left = `${left + window.scrollX}px`;
+		tip.style.top = `${top + window.scrollY}px`;
 		tip.classList.add('show');
 		window.clearTimeout(tipTimer);
-		tipTimer = window.setTimeout(() => tip.classList.remove('show'), 2200);
+		tipTimer = window.setTimeout(() => tip.classList.remove('show'), 1800);
 	}
 
 	document.addEventListener('contextmenu', (e) => {
@@ -67,32 +71,34 @@
 		user-select: none;
 	}
 
-	/* the little "© Behr Carey" notice that appears where you right-clicked */
+	/* the small "© Behr Carey" notice that appears where you right-clicked.
+	   It sits on the page (position: absolute), so it scrolls away with the photo. */
 	.photo-guard-tip {
-		position: fixed;
+		position: absolute;
+		top: 0;
+		left: 0;
 		z-index: 2000;
-		padding: 0.7rem 1.1rem;
-		border-radius: 8px;
-		background: #1a1d24;
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-		color: white;
-		font-size: 0.9rem;
+		padding: 0.4rem 0.75rem;
+		border-radius: 999px;
+		background: rgba(15, 18, 25, 0.62);
+		-webkit-backdrop-filter: blur(10px) saturate(1.4);
+		backdrop-filter: blur(10px) saturate(1.4);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: rgba(255, 255, 255, 0.85);
+		font-size: 0.72rem;
+		letter-spacing: 0.04em;
 		white-space: nowrap;
 		opacity: 0;
-		transform: translate(-50%, calc(-100% + 6px));
+		transform: translate(-50%, calc(-100% + 4px));
 		transition:
-			opacity 0.2s ease,
-			transform 0.2s ease;
+			opacity 0.25s ease,
+			transform 0.25s ease;
 		pointer-events: none;
 	}
-	.photo-guard-tip::after {
-		content: '';
-		position: absolute;
-		top: 100%;
-		left: 50%;
-		transform: translateX(-50%);
-		border: 7px solid transparent;
-		border-top-color: #1a1d24;
+	:root[data-theme='light'] .photo-guard-tip {
+		background: rgba(255, 255, 255, 0.72);
+		border-color: rgba(17, 24, 39, 0.08);
+		color: rgba(17, 24, 39, 0.75);
 	}
 	.photo-guard-tip.show {
 		opacity: 1;
