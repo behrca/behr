@@ -342,6 +342,27 @@ import '../styles/theme.css';
 			}
 		);
 
+		// Latest work entrance, like "Explore My Work": the heading rises in, then the photos rise
+		// one after another, each settling from slightly zoomed in, and their captions follow.
+		// Tied to scroll, so scrolling back up rewinds it.
+		gsap
+			.timeline({
+				scrollTrigger: { trigger: '.latest-head', start: 'top 95%', end: 'top 60%', scrub: 0.8 },
+			})
+			.fromTo('.latest-head .kicker', { y: 40, opacity: 0 }, { y: 0, opacity: 1, ease: 'none' }, 0)
+			.fromTo('.latest-head h2', { y: 40, opacity: 0 }, { y: 0, opacity: 1, ease: 'none' }, 0.15);
+
+		const slideTl = gsap.timeline({
+			scrollTrigger: { trigger: '.track-wrap', start: 'top 95%', end: 'top 40%', scrub: 0.8 },
+		});
+		document.querySelectorAll<HTMLElement>('.slide').forEach((slide, i) => {
+			const d = i * 0.1;
+			slideTl
+				.fromTo(slide, { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.6, ease: 'none' }, d)
+				.fromTo(slide.querySelector('img'), { '--s': 1.2 }, { '--s': 1, duration: 0.9, ease: 'none' }, d)
+				.fromTo(slide.querySelector('span'), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: 'none' }, d + 0.35);
+		});
+
 		// Latest work: the page pauses on this section and the photos slide sideways as you scroll
 		const latest = document.querySelector<HTMLElement>('.latest');
 		const track = document.querySelector<HTMLElement>('.track');
@@ -922,6 +943,7 @@ import '../styles/theme.css';
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		scale: var(--s, 1); /* the entrance zoom (separate from the hover zoom below) */
 		transition: transform 0.6s ease;
 	}
 	.slide:hover img {
