@@ -1,6 +1,5 @@
 ---
 import path from 'node:path';
-import { srcsetFor } from '../lib/responsive';
 import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -791,8 +790,6 @@ const items = await Promise.all(
 						>
 							<img
 								src={photo.src}
-								srcset={srcsetFor(photo.src, photo.width)}
-								sizes="(max-width: 600px) 88vw, (max-width: 900px) 50vw, 52vw"
 								alt={photo.alt}
 								width={photo.width}
 								height={photo.height}
