@@ -1,30 +1,421 @@
 ---
-import Layout from '../layouts/BlogPost.astro';
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE } from '../consts';
+import '../styles/theme.css';
+
+// ---------------------------------------------------------------------------
+// Everything you'd want to change on this page lives here.
+// ---------------------------------------------------------------------------
+
+const intro = {
+	heading: 'Hi, I’m Behr.',
+	lead: 'I am a photographer based in northwest Iowa. Capturing photos from around the world is something that I enjoy and want to share with you.',
+	photo: '/about.jpg',
+	photoAlt: 'Behr Carey looking through binoculars on a ship deck',
+};
+
+// Each string is one paragraph.
+const story = [
+	'I started photography many years ago with a basic camera, now I travel with my camera to capture the adventures that I go on.',
+	'When I am taking photos, I look for something that is impressive. Whether that is a major airliner, or a huge mountain range. I enjoy things that are impressive and something that you will not forget.',
+	'I still bring my camera with me wherever I go looking for the next photo idea, when I do I will be sure to share it with you.',
+];
+
+// The things you shoot. Images reuse the home page card photos.
+const focus = [
+	{
+		title: 'Nature',
+		image: '/nature.jpg',
+		text: 'Big mountains are what got me hooked. I like finding a spot where the view is so big it barely fits in the frame.',
+	},
+	{
+		title: 'Aviation',
+		image: '/aviation.jpg',
+		text: 'From airliners to crop dusters working the fields, I like catching aircraft doing what they were built to do.',
+	},
+	{
+		title: 'Wildlife',
+		image: '/wildlife.jpg',
+		text: 'Whales and birds don’t wait for you. Most of these shots came from having the camera ready when something happened.',
+	},
+];
+
+// Quick facts shown in a row. Add or remove lines freely.
+// Keep these about the photography (gear, years shooting), not personal details.
+const facts = [
+	{ label: 'Shooting since', value: '2022' },
+	{ label: 'Camera', value: 'Canon Rebel T6' },
+	{ label: 'Favorite lens', value: 'Canon EF 75–300mm' },
+];
+
+// The end of the page: a nudge toward the gallery (the site's only call to action)
+const closing = {
+	heading: 'See the work.',
+	text: 'Nature, aviation, and wildlife, all in one place.',
+};
 ---
 
-<Layout
-	title="Website Under Development"
-	description="Website Under Development"
-	pubDate={new Date('August 12 2026')}
-	heroImage="/hero-4.jpg"
->
-	<p>
-		Please note that this website is currently under development and is not yet complete. Some features, content, and functionality may be unfinished, unavailable, or subject to change. Updates and improvements are ongoing. Thank you for your patience while the website continues to take shape.
-	</p>
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`About | ${SITE_TITLE}`} description={intro.lead} />
+	</head>
+	<body>
+		<Header />
+		<main class="about-page">
+			<section class="intro">
+				<div class="intro-copy">
+					<p class="eyebrow">About</p>
+					<h1>{intro.heading}</h1>
+					<p class="lead">{intro.lead}</p>
+				</div>
+				<div class="intro-photo">
+					<img src={intro.photo} alt={intro.photoAlt} decoding="async" />
+				</div>
+			</section>
 
-	<p>
-		
-	</p>
+			<section class="facts" aria-label="Quick facts">
+				{
+					facts.map((f) => (
+						<div class="fact">
+							<span class="fact-label">{f.label}</span>
+							<span class="fact-value">{f.value}</span>
+						</div>
+					))
+				}
+			</section>
 
-	<p>
-		
-	</p>
+			<section class="story">
+				<p class="eyebrow">My story</p>
+				<div class="story-text">
+					{story.map((p) => <p>{p}</p>)}
+				</div>
+			</section>
 
-	<p>
-		
-	</p>
+			<section class="focus">
+				<p class="eyebrow">What I shoot</p>
+				<div class="focus-grid">
+					{
+						focus.map((f) => (
+							<a class="focus-item" href={`/gallery?category=${f.title.toLowerCase()}`}>
+								<div class="focus-photo">
+									<img src={f.image} alt="" loading="lazy" decoding="async" />
+								</div>
+								<h3>{f.title}</h3>
+								<p>{f.text}</p>
+							</a>
+						))
+					}
+				</div>
+			</section>
 
-	<p>
-		
-	</p>
-</Layout>
+			<section class="closing">
+				<h2>{closing.heading}</h2>
+				<p>{closing.text}</p>
+				<a class="button" href="/gallery">
+					<span class="label">Open the gallery</span>
+					<span class="arrow" aria-hidden="true">→</span>
+				</a>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<script>
+	import { gsap } from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+	gsap.registerPlugin(ScrollTrigger);
+
+	if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		// Top of the page: text rises in and the photo settles from slightly zoomed
+		gsap.fromTo(
+			'.intro-copy > *',
+			{ y: 40, opacity: 0 },
+			{ y: 0, opacity: 1, duration: 0.9, ease: 'power3.out', stagger: 0.12, delay: 0.1 }
+		);
+		gsap.fromTo(
+			'.intro-photo img',
+			{ scale: 1.12, opacity: 0 },
+			{ scale: 1, opacity: 1, duration: 1.4, ease: 'power3.out' }
+		);
+
+		// Everything further down rises in as you scroll to it
+		document.querySelectorAll<HTMLElement>('.facts, .story, .focus-item, .closing').forEach((el) => {
+			gsap.fromTo(
+				el.matches('.story, .closing') ? el.children : el,
+				{ y: 40, opacity: 0 },
+				{
+					y: 0,
+					opacity: 1,
+					ease: 'none',
+					stagger: 0.12,
+					scrollTrigger: { trigger: el, start: 'top 90%', end: 'top 55%', scrub: 0.8 },
+				}
+			);
+		});
+
+		window.addEventListener('load', () => ScrollTrigger.refresh());
+	}
+</script>
+
+<style>
+	main.about-page {
+		width: 100%;
+		max-width: 100%;
+		min-height: 100vh;
+		padding: 0;
+		background: var(--site-bg);
+		color: var(--site-fg);
+		overflow-x: clip;
+	}
+
+	.eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin: 0 0 1rem;
+		font-size: 0.75rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--site-fg-3);
+	}
+	.eyebrow::after {
+		content: '';
+		width: 120px;
+		height: 1px;
+		background: var(--site-line);
+	}
+
+	h1,
+	h2,
+	h3 {
+		font-family: var(--font-display);
+		font-weight: 400;
+		letter-spacing: -0.02em;
+		color: var(--site-fg);
+	}
+
+	/* Intro: text on the left, portrait on the right */
+	.intro {
+		display: grid;
+		grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+		gap: 5vw;
+		align-items: center;
+		padding: 10rem 6vw 5rem;
+	}
+	.intro h1 {
+		margin: 0 0 1.5rem;
+		font-size: clamp(2.6rem, 7vw, 5rem);
+		line-height: 1;
+	}
+	.lead {
+		max-width: 36rem;
+		margin: 0;
+		font-size: 1.2rem;
+		line-height: 1.7;
+		color: var(--site-fg-2);
+	}
+	.intro-photo {
+		width: 100%;
+		aspect-ratio: 4 / 5;
+		max-height: 80vh;
+		overflow: hidden;
+		border-radius: 16px;
+		background: var(--site-surface);
+	}
+	.intro-photo img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	/* Quick facts: a row of small label / value pairs between two lines */
+	.facts {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		gap: 2rem;
+		margin: 0 6vw;
+		padding: 2.5rem 0;
+		border-top: 1px solid var(--site-line);
+		border-bottom: 1px solid var(--site-line);
+	}
+	.fact {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.fact-label {
+		font-size: 0.7rem;
+		letter-spacing: 0.25em;
+		text-transform: uppercase;
+		color: var(--site-fg-3);
+	}
+	.fact-value {
+		font-family: var(--font-display);
+		font-size: 1.35rem;
+		font-weight: 400;
+		color: var(--site-fg);
+	}
+
+	/* Story */
+	.story {
+		display: grid;
+		grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+		gap: 5vw;
+		padding: 7rem 6vw;
+	}
+	.story-text p {
+		max-width: 40rem;
+		margin: 0 0 1.5rem;
+		font-size: 1.1rem;
+		line-height: 1.8;
+		color: var(--site-fg-2);
+	}
+	.story-text p:first-child {
+		font-size: 1.35rem;
+		line-height: 1.6;
+		color: var(--site-fg);
+	}
+
+	/* What I shoot */
+	.focus {
+		padding: 0 6vw 7rem;
+	}
+	.focus-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 2rem;
+		margin-top: 1.5rem;
+	}
+	.focus-item {
+		color: inherit;
+		text-decoration: none;
+	}
+	.focus-photo {
+		aspect-ratio: 4 / 3;
+		overflow: hidden;
+		border-radius: 12px;
+		background: var(--site-surface);
+	}
+	.focus-photo img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+	}
+	.focus-item:hover .focus-photo img,
+	.focus-item:focus-visible .focus-photo img {
+		transform: scale(1.05);
+	}
+	.focus-item h3 {
+		margin: 1.25rem 0 0.5rem;
+		font-size: 1.6rem;
+	}
+	.focus-item p {
+		margin: 0;
+		line-height: 1.6;
+		color: var(--site-fg-2);
+	}
+
+	/* Closing */
+	.closing {
+		padding: 7rem 6vw 9rem;
+		text-align: center;
+		border-top: 1px solid var(--site-line);
+		margin: 0 6vw;
+	}
+	.closing h2 {
+		margin: 0 0 1.25rem;
+		font-size: clamp(2rem, 6vw, 4rem);
+		line-height: 1.05;
+	}
+	.closing p {
+		max-width: 34rem;
+		margin: 0 auto 2.5rem;
+		line-height: 1.7;
+		color: var(--site-fg-2);
+	}
+	.button {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		border: 2px solid var(--site-fg);
+		color: var(--site-fg);
+		padding: 0.9rem 1.6rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		font-size: 0.8rem;
+		text-decoration: none;
+		transition: color 0.4s ease;
+	}
+	.button::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: var(--site-fg);
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+		z-index: -1;
+	}
+	.button .arrow {
+		display: inline-block;
+		transition: transform 0.35s ease;
+	}
+	.button:hover,
+	.button:focus-visible {
+		color: var(--site-bg);
+	}
+	.button:hover::before,
+	.button:focus-visible::before {
+		transform: scaleX(1);
+	}
+	.button:hover .arrow,
+	.button:focus-visible .arrow {
+		transform: translateX(5px);
+	}
+
+	/* Hidden until the entrance animation plays, so the heading doesn't flash first */
+	@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+		.intro-copy > *,
+		.intro-photo img {
+			opacity: 0;
+		}
+	}
+
+	@media (max-width: 900px) {
+		.intro {
+			grid-template-columns: 1fr;
+			padding-top: 8rem;
+		}
+		.intro-photo {
+			max-width: 420px;
+		}
+		.story {
+			grid-template-columns: 1fr;
+			gap: 0;
+			padding: 5rem 6vw;
+		}
+		.focus-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.focus-photo img,
+		.button,
+		.button::before,
+		.button .arrow {
+			transition: none;
+		}
+	}
+</style>

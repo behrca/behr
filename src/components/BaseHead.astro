@@ -1,7 +1,14 @@
 ---
 // Import the global.css file here so that it is included on
 // all pages through the use of the <BaseHead /> component.
+// Site fonts, in the spirit of aesop.com (see the font variables at the top of global.css):
+//   Inter        everything: body text, headings, menu, buttons
+//   Optima       the BEHR CAREY name (built into Macs, iPhones and iPads);
+//   Tenor Sans   a free look-alike, only downloaded on devices without Optima
+import '@fontsource-variable/inter';
+import '@fontsource/tenor-sans';
 import '../styles/global.css';
+import '../styles/theme.css';
 
 interface Props {
 	title: string;
@@ -11,18 +18,24 @@ interface Props {
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = '/blog-placeholder-1.jpg' } = Astro.props;
+// image: the picture shown when a page is shared in a message or on social media
+const { title, description, image = '/hero.jpg' } = Astro.props;
 ---
-
+<script is:inline>
+	(function () {
+		var saved = null;
+		try {
+			saved = localStorage.getItem('theme');
+		} catch (e) {}
+		var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		document.documentElement.dataset.theme = saved === 'light' || saved === 'dark' ? saved : dark ? 'dark' : 'light';
+	})();
+</script>
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=8" sizes="any" />
 <meta name="generator" content={Astro.generator} />
-
-<!-- Font preloads -->
-<link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin />
-<link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin />
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />

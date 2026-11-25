@@ -1,0 +1,106 @@
+---
+// PhotoGuard: makes the photos harder to save, on every page (it's included by Footer.astro).
+//   - right-clicking a photo shows "© Behr Carey. All rights reserved." instead of the
+//     browser menu (so there's no "Save Image As…")
+//   - photos can't be dragged out onto the desktop
+//   - on iPhone / iPad, long-pressing a photo doesn't offer "Save to Photos"
+// It covers real images and background photos alike (hero, cards, featured photo, footer).
+// Map tiles are left alone; they belong to OpenStreetMap, not to you.
+//
+// Honest note: nothing on a website can make photos impossible to copy (screenshots and
+// developer tools always work). This stops casual saving, which is most of it.
+---
+
+<div class="photo-guard-tip" id="photo-guard-tip" role="status" aria-live="polite">
+	© Behr Carey. All rights reserved.
+</div>
+
+<script>
+	const tip = document.getElementById('photo-guard-tip') as HTMLElement;
+	let tipTimer: number | undefined;
+
+	const PHOTO_BG = /url\(["']?[^"')]*\.(jpe?g|png|webp|avif)/i;
+	const isMapTile = (el: Element) => !!el.closest('.leaflet-container');
+
+	// Is this element one of the photos? (an image, or something with a photo as its background)
+	function isPhoto(el: Element) {
+		if (isMapTile(el)) return false;
+		if (el instanceof HTMLImageElement) return true;
+		return PHOTO_BG.test(getComputedStyle(el).backgroundImage);
+	}
+
+	// Photos often sit behind text or links, so look at everything under the pointer
+	function photoUnder(x: number, y: number) {
+		return document.elementsFromPoint(x, y).some(isPhoto);
+	}
+
+	function showTip(x: number, y: number) {
+		const half = tip.offsetWidth / 2 + 12;
+		tip.style.left = `${Math.min(Math.max(x, half), window.innerWidth - half)}px`;
+		tip.style.top = `${Math.max(y - 16, tip.offsetHeight + 16)}px`;
+		tip.classList.add('show');
+		window.clearTimeout(tipTimer);
+		tipTimer = window.setTimeout(() => tip.classList.remove('show'), 2200);
+	}
+
+	document.addEventListener('contextmenu', (e) => {
+		if (photoUnder(e.clientX, e.clientY)) {
+			e.preventDefault();
+			showTip(e.clientX, e.clientY);
+		}
+	});
+
+	// stop photos from being dragged out of the page onto the desktop
+	document.addEventListener('dragstart', (e) => {
+		const el = e.target as Element;
+		if (el instanceof Element && (isPhoto(el) || el.querySelector?.('img') || photoUnder(e.clientX, e.clientY))) {
+			e.preventDefault();
+		}
+	});
+</script>
+
+<style is:global>
+	/* no dragging photos out, and no "Save to Photos" on a long-press (iPhone / iPad) */
+	img:not(.leaflet-tile) {
+		-webkit-user-drag: none;
+		-webkit-touch-callout: none;
+		user-select: none;
+	}
+
+	/* the little "© Behr Carey" notice that appears where you right-clicked */
+	.photo-guard-tip {
+		position: fixed;
+		z-index: 2000;
+		padding: 0.7rem 1.1rem;
+		border-radius: 8px;
+		background: #1a1d24;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+		color: white;
+		font-size: 0.9rem;
+		white-space: nowrap;
+		opacity: 0;
+		transform: translate(-50%, calc(-100% + 6px));
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease;
+		pointer-events: none;
+	}
+	.photo-guard-tip::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 7px solid transparent;
+		border-top-color: #1a1d24;
+	}
+	.photo-guard-tip.show {
+		opacity: 1;
+		transform: translate(-50%, -100%);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.photo-guard-tip {
+			transition: none;
+		}
+	}
+</style>

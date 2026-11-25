@@ -1,9 +1,23 @@
+Claude
+
+
+
+
+
+
+
+
+
+
+
+
+Theme · CSS
 /*
   theme.css: light / dark colors for the home page, the header, and the photo viewer.
   The ":root[data-theme]" at the start of every rule makes it win over each
   page's own styles, no matter where or how those are written.
 */
-
+ 
 /* ---------- Home page: background ---------- */
 :root[data-theme] main.home,
 :root[data-theme] main:has(> .page-bg) {
@@ -14,7 +28,7 @@
 :root[data-theme] .closing {
 	background: var(--site-bg);
 }
-
+ 
 /* The hero photo fades into the page color as you scroll down */
 :root[data-theme] .fade {
 	background: linear-gradient(
@@ -25,8 +39,6 @@
 		var(--site-bg) 100%
 	);
 }
-
-/* ---------- Home page: hero in light mode ---------- */
 /* Light mode: keep the photo clear behind the headline, then dissolve to the page color.
    (This rule must stay below the one above.) */
 :root[data-theme='light'] .fade {
@@ -38,34 +50,6 @@
 		var(--site-bg) 70%
 	);
 }
-/* A pale wash on the left instead of a dark one, so dark text stays readable.
-   Raise 0.82 for a stronger wash, lower it to see more of the photo. */
-:root[data-theme='light'] .overlay {
-	background: linear-gradient(
-		to right,
-		rgba(var(--site-bg-rgb), 0.82),
-		rgba(var(--site-bg-rgb), 0) 75%
-	);
-}
-:root[data-theme='light'] .hero .eyebrow,
-:root[data-theme='light'] .hero h1,
-:root[data-theme='light'] .hero .tagline {
-	color: var(--site-fg);
-}
-:root[data-theme='light'] .hero .word {
-	color: #2b5fc4;
-}
-:root[data-theme='light'] .hero .button {
-	border-color: var(--site-fg);
-	color: var(--site-fg);
-}
-:root[data-theme='light'] .hero .button::before {
-	background: var(--site-fg);
-}
-:root[data-theme='light'] .hero .button:hover,
-:root[data-theme='light'] .hero .button:focus-visible {
-	color: var(--site-bg);
-}
 :root[data-theme='light'] .scroll-cue {
 	color: var(--site-fg);
 	border-color: rgba(17, 24, 39, 0.6);
@@ -73,7 +57,25 @@
 :root[data-theme='light'] .scroll-cue:hover {
 	background: rgba(17, 24, 39, 0.08);
 }
-
+ 
+/* ---------- Home page: hero text (same look in light and dark mode) ---------- */
+/* The original dark wash on the left, with a faint floor so the right side isn't completely bare.
+   Lower the 0.14 toward 0 for more of the original look, or raise it for more help. */
+:root[data-theme] .overlay {
+	background: linear-gradient(to right, rgba(10, 14, 25, 0.55), rgba(10, 14, 25, 0.14));
+}
+/* A light touch of shadow on the letters */
+:root[data-theme] .hero .eyebrow,
+:root[data-theme] .hero h1 {
+	text-shadow:
+		0 1px 2px rgba(0, 0, 0, 0.22),
+		0 2px 20px rgba(0, 0, 0, 0.25);
+}
+/* The changing word: a paler blue, since the original blue was too close to the sky */
+:root[data-theme] .hero .word {
+	color: #a9c8ff;
+}
+ 
 /* ---------- Home page: headings and links ---------- */
 :root[data-theme] .section-eyebrow,
 :root[data-theme] .kicker {
@@ -106,7 +108,7 @@
 :root[data-theme] .card:focus-visible {
 	outline-color: var(--site-fg);
 }
-
+ 
 /* The featured photo's text sits on a photo, so it stays light in both themes */
 :root[data-theme] .featured-text .kicker {
 	color: rgba(255, 255, 255, 0.7);
@@ -120,7 +122,7 @@
 :root[data-theme] .featured-text .more:hover {
 	color: #fff;
 }
-
+ 
 /* The closing button sits on the page background, not a photo */
 :root[data-theme] .closing .button {
 	border-color: var(--site-fg);
@@ -133,20 +135,35 @@
 :root[data-theme] .closing .button:focus-visible {
 	color: var(--site-bg);
 }
-
-/* ---------- Floating header (home and gallery) in light mode ---------- */
-:root[data-theme='light'] header.overlay {
-	--nav-fg: #111827;
-	--nav-img: none;
-	--nav-backdrop: rgba(245, 243, 238, 0.92);
+ 
+/* "Latest work" captions: a soft dark fade at the bottom of each photo */
+:root[data-theme] .slide::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 45%;
+	background: linear-gradient(to top, rgba(10, 14, 25, 0.75), rgba(10, 14, 25, 0));
+	pointer-events: none;
 }
-:root[data-theme='light'] header.overlay:not(.is-fixed) {
-	background: linear-gradient(to bottom, rgba(245, 243, 238, 0.85), rgba(245, 243, 238, 0));
+:root[data-theme] .slide span {
+	z-index: 1;
+	font-weight: 500;
 }
-:root[data-theme='light'] header.overlay.is-fixed {
-	background: none;
+ 
+/* ---------- Header ---------- */
+/* The bar that slides in when you scroll up: lighter frosted glass instead of a heavy dark band */
+:root[data-theme='dark'] header.overlay {
+	--nav-backdrop: rgba(10, 14, 25, 0.55);
 }
-
+:root[data-theme] header.overlay::before {
+	-webkit-backdrop-filter: blur(16px) saturate(1.2);
+	backdrop-filter: blur(16px) saturate(1.2);
+}
+/* The logo takes the header's text color by itself (see .brand-mark in Header.astro),
+   so it needs no light / dark rules of its own. */
+ 
 /* ---------- Gallery photo viewer in light mode ---------- */
 /* Every rule starts with ".lightbox" so it always outranks the gallery page's own styles */
 :root[data-theme='light'] .lightbox {
@@ -195,4 +212,216 @@
 :root[data-theme='light'] .lightbox .lb-nav:focus-visible {
 	background: #111827;
 	color: #f5f3ee;
+}
+ 
+/* The bar that slides in when you scroll up: a gradient that fades out, not a solid band */
+:root[data-theme] header.overlay::before {
+	bottom: -1.75rem; /* reaches below the links, so the fade is longer and softer */
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
+	-webkit-mask-image: linear-gradient(
+		to bottom,
+		rgba(0, 0, 0, 0.85) 0%,
+		rgba(0, 0, 0, 0.7) 40%,
+		rgba(0, 0, 0, 0) 100%
+	);
+	mask-image: linear-gradient(
+		to bottom,
+		rgba(0, 0, 0, 0.85) 0%,
+		rgba(0, 0, 0, 0.7) 40%,
+		rgba(0, 0, 0, 0) 100%
+	);
+}
+/* Top of the page: a soft fade behind the nav instead of a dark strip */
+:root[data-theme] header.overlay {
+	--fade-rgb: 10, 14, 25;
+}
+:root[data-theme='light'] header.overlay:not(.over-photo) {
+	--fade-rgb: 245, 243, 238; /* the gallery's header sits on a light page, so its fade is light */
+}
+:root[data-theme] header.overlay:not(.is-fixed) {
+	background: none !important;
+}
+:root[data-theme] header.overlay:not(.is-fixed)::before {
+	display: none; /* the frosted layer is only for the slide-in bar */
+}
+:root[data-theme] header.overlay::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 7.5rem; /* the fade reaches well below the links */
+	z-index: -1;
+	pointer-events: none;
+	background: linear-gradient(
+		to bottom,
+		rgba(var(--fade-rgb), 0.55) 0%,
+		rgba(var(--fade-rgb), 0.4) 25%,
+		rgba(var(--fade-rgb), 0.22) 55%,
+		rgba(var(--fade-rgb), 0.08) 80%,
+		rgba(var(--fade-rgb), 0) 100%
+	);
+	transition: opacity 0.4s ease;
+}
+:root[data-theme] header.overlay.is-fixed::after {
+	opacity: 0; /* the slide-in bar has its own frosted backdrop */
+}
+
+/* On the home page the links and logo get a faint shadow of their own, so they hold up over bright skies */
+:root[data-theme] header.overlay.over-photo:not(.is-fixed) nav a,
+:root[data-theme] header.overlay.over-photo:not(.is-fixed) .brand {
+	text-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
+}
+:root[data-theme] header.overlay.over-photo:not(.is-fixed) .brand-mark {
+	filter: drop-shadow(0 1px 8px rgba(0, 0, 0, 0.4));
+}
+
+/* ---------- Slide-in bar (after you scroll): liquid glass under the words only ----------
+   Instead of a band across the whole screen, the name, the links and the theme button each
+   sit on their own small piece of "liquid glass" (in the spirit of Apple's design): clear,
+   strongly blurred and color-boosted behind, with a bright rim of light along the top edge.
+   Only the pinned bar changes; the header at the very top of each page is untouched. */
+:root[data-theme] header.overlay {
+	--glass-tint: rgba(18, 22, 32, 0.22);
+	--glass-sheen: rgba(255, 255, 255, 0.14);
+	--glass-rim: rgba(255, 255, 255, 0.22);
+	--glass-highlight: rgba(255, 255, 255, 0.38);
+	--glass-shadow: rgba(0, 0, 0, 0.18);
+}
+:root[data-theme='light'] header.overlay {
+	--glass-tint: rgba(255, 255, 255, 0.38);
+	--glass-sheen: rgba(255, 255, 255, 0.5);
+	--glass-rim: rgba(255, 255, 255, 0.65);
+	--glass-highlight: rgba(255, 255, 255, 0.9);
+	--glass-shadow: rgba(17, 24, 39, 0.1);
+}
+/* no full-width band or shading behind the pinned bar */
+:root[data-theme] header.overlay.is-fixed {
+	background: none !important;
+}
+:root[data-theme] header.overlay.is-fixed::before,
+:root[data-theme] header.overlay.is-fixed::after {
+	display: none;
+}
+:root[data-theme] header.overlay.is-fixed nav {
+	padding-block: 0.75rem;
+}
+:root[data-theme] header.overlay.is-fixed .brand,
+:root[data-theme] header.overlay.is-fixed .internal-links,
+:root[data-theme] header.overlay.is-fixed .theme-toggle {
+	background:
+		linear-gradient(to bottom, var(--glass-sheen), transparent 60%),
+		var(--glass-tint);
+	border: 1px solid var(--glass-rim);
+	border-radius: 999px;
+	-webkit-backdrop-filter: blur(20px) saturate(1.8) brightness(1.05);
+	backdrop-filter: blur(20px) saturate(1.8) brightness(1.05);
+	box-shadow:
+		inset 0 1px 0 var(--glass-highlight),
+		inset 0 -1px 1px rgba(255, 255, 255, 0.06),
+		inset 0 0 14px rgba(255, 255, 255, 0.05),
+		0 10px 30px var(--glass-shadow);
+}
+:root[data-theme] header.overlay.is-fixed .brand {
+	padding: 0.4rem 1.1rem 0.4rem 0.7rem;
+}
+:root[data-theme] header.overlay.is-fixed .internal-links {
+	display: flex;
+	padding: 0 0.5rem;
+}
+:root[data-theme] header.overlay.is-fixed .internal-links a {
+	padding: 0.55em 0.7em;
+}
+/* over bright photos, a whisper of shadow keeps the white words crisp on the glass */
+:root[data-theme='dark'] header.overlay.is-fixed nav a,
+:root[data-theme='dark'] header.overlay.is-fixed .brand {
+	text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+}
+/* ---------- Polish: typography, hero details, film grain, smooth scroll ---------- */
+
+:root {
+}
+
+/* Headlines: in the spirit of aesop.com, the same font as the body text at a regular
+   weight (no bold), slightly tightened. The very large hero headline is a touch lighter. */
+:root[data-theme] .hero h1,
+:root[data-theme] .section-title,
+:root[data-theme] .latest-head h2,
+:root[data-theme] .featured-text h2,
+:root[data-theme] .about-copy h2,
+:root[data-theme] .closing h2,
+:root[data-theme] .card-body h3,
+:root[data-theme] .gallery-header h1 {
+	font-family: var(--font-display);
+	font-weight: 400;
+	letter-spacing: -0.025em;
+}
+:root[data-theme] .hero h1 {
+	font-weight: 300;
+	letter-spacing: -0.035em;
+	line-height: 0.98;
+}
+/* the space before the changing word (written in CSS so it can't get lost when the site is built) */
+:root[data-theme] .hero .words {
+	margin-left: 0.26em;
+}
+:root[data-theme] .hero .word {
+	font-weight: 300;
+}
+
+/* Each headline line sits in a mask, so the words rise up into view */
+:root[data-theme] .hero h1 .line {
+	display: block;
+	overflow: hidden;
+	padding: 0.04em 0 0.16em;
+	margin: -0.04em 0 -0.16em;
+}
+:root[data-theme] .hero h1 .line-inner {
+	display: inline-block;
+}
+
+/* Hidden until the entrance animation plays (skipped if scripts are off or motion is reduced) */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+	:root[data-theme] .hero .line-inner {
+		transform: translateY(115%);
+	}
+	:root[data-theme] .hero .eyebrow,
+	:root[data-theme] .hero .button,
+	:root[data-theme] .hero .scroll-cue {
+		opacity: 0;
+	}
+}
+
+/* Each hero photo drifts in slowly as it appears */
+:root[data-theme] .bg.active {
+	animation: hero-drift 9s ease-out both;
+}
+@keyframes hero-drift {
+	from {
+		transform: scale(1.08);
+	}
+	to {
+		transform: scale(1);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	:root[data-theme] .bg.active {
+		animation: none;
+	}
+}
+
+/* A whisper of film grain over everything. To remove it, delete this block and the one below. */
+body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	z-index: 90;
+	pointer-events: none;
+	opacity: 0.06;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:root[data-theme='light'] body::after {
+	opacity: 0.05;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }

@@ -5,18 +5,20 @@ import ThemeToggle from './ThemeToggle.astro';
 
 // Pages where the header floats over a dark page instead of using the solid bar
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
-const isOverlay = path === '/' || path === '/gallery';
+const isOverlay = path === '/' || path === '/gallery' || path === '/about';
 ---
 
 <header class:list={[{ overlay: isOverlay, 'over-photo': path === '/' }]}>
 	<nav>
 		<a href="/" class="brand">
-			<img src="/favicon.svg?v=10" alt="Behr Carey logo" width="32" height="32" />
+			<span class="brand-mark" role="img" aria-label="Behr Carey logo"></span>
 			<span class="divider">|</span>
 			<span>{SITE_TITLE}</span>
 		</a>
 
 		<div class="internal-links">
+			<!-- the sliding piece of glass behind the current / hovered link (see "Glass lens" below) -->
+			<span class="nav-lens" aria-hidden="true"><span class="nav-lens-shape"></span></span>
 			<HeaderLink href="/">Home</HeaderLink>
 			<HeaderLink href="/gallery">Gallery</HeaderLink>
 			<HeaderLink href="/about">About</HeaderLink>
@@ -48,32 +50,61 @@ const isOverlay = path === '/' || path === '/gallery';
 		text-decoration: none;
 	}
 
-	/* Nav links: underline sweeps in from the left on hover, out to the right on leave */
+	/* ---- Glass lens --------------------------------------------------------
+	   Like the selected tab in Apple's Liquid Glass tab bars: a lighter piece of glass sits
+	   behind the current page's link. Point at another link and it glides over with a soft
+	   spring, stretching a little as it moves and gently magnifying the word it lands on.
+	   Move away and it glides back to the current page. (Positioned by the script below.) */
+	.internal-links {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
 	.internal-links a {
 		position: relative;
-		transition: opacity 0.3s ease;
+		z-index: 1;
+		transition: transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.3s ease;
 	}
-	.internal-links a::after {
-		content: '';
+	.internal-links a.is-lensed {
+		transform: scale(1.06); /* the glass magnifies the word under it */
+	}
+	.nav-lens {
 		position: absolute;
-		left: 0.5em;
-		right: 0.5em;
-		bottom: 0.6em;
-		height: 2px;
-		background: currentColor;
-		transform: scaleX(0);
-		transform-origin: right;
-		transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+		top: 50%;
+		left: 0;
+		z-index: 0;
+		width: var(--lens-w, 0px);
+		height: 2.35em;
+		margin-top: -1.175em;
+		transform: translateX(var(--lens-x, 0px));
+		opacity: 0;
+		pointer-events: none;
+		transition:
+			transform 0.55s cubic-bezier(0.34, 1.3, 0.64, 1),
+			width 0.55s cubic-bezier(0.34, 1.3, 0.64, 1),
+			opacity 0.3s ease;
 	}
-	.internal-links a:hover::after,
-	.internal-links a:focus-visible::after,
-	.internal-links a.active::after {
-		transform: scaleX(1);
-		transform-origin: left;
+	.nav-lens.is-on {
+		opacity: 1;
 	}
-	/* While hovering the nav, the other links dim slightly */
-	.internal-links:hover a:not(:hover) {
-		opacity: 0.55;
+	.nav-lens.no-anim {
+		transition: none;
+	}
+	.nav-lens-shape {
+		display: block;
+		width: 100%;
+		height: 100%;
+		border-radius: 999px;
+		background:
+			linear-gradient(to bottom, var(--lens-sheen, rgba(255, 255, 255, 0.22)), transparent 70%),
+			var(--lens-tint, rgba(255, 255, 255, 0.1));
+		border: 1px solid var(--lens-rim, rgba(255, 255, 255, 0.35));
+		-webkit-backdrop-filter: blur(6px) saturate(1.6) brightness(1.1);
+		backdrop-filter: blur(6px) saturate(1.6) brightness(1.1);
+		box-shadow:
+			inset 0 1px 0 var(--lens-highlight, rgba(255, 255, 255, 0.55)),
+			inset 0 -1px 2px rgba(255, 255, 255, 0.08),
+			0 4px 14px var(--lens-shadow, rgba(0, 0, 0, 0.12));
 	}
 	.internal-links {
 		justify-self: center;
@@ -84,14 +115,28 @@ const isOverlay = path === '/' || path === '/gallery';
 		align-items: center;
 		gap: 0.75rem;
 		text-decoration: none;
-		font-family: 'Portland', sans-serif;
-		font-weight: 100;
+		font-family: var(--font-brand);
+		font-weight: 400;
+		font-size: 1rem;
 		text-transform: uppercase;
-		letter-spacing: 0.25em;
+		letter-spacing: 0.3em;
 	}
-	.brand img {
+	/* The BC monogram. It's drawn in the same color as the text next to it (currentColor),
+	   so it always follows the site's light / dark setting instead of the device's. */
+	.brand-mark {
+		display: block;
+		width: 32px;
 		height: 32px;
-		width: auto;
+		flex: none;
+	}
+	.brand-mark::before {
+		content: '';
+		display: block;
+		width: 100%;
+		height: 100%;
+		background-color: currentColor;
+		-webkit-mask: url('/logo-mark.png') center / contain no-repeat;
+		mask: url('/logo-mark.png') center / contain no-repeat;
 	}
 	.divider {
 		opacity: 0.5;
@@ -120,9 +165,6 @@ const isOverlay = path === '/' || path === '/gallery';
 	header.overlay .brand,
 	header.overlay .brand span {
 		color: white;
-	}
-	header.overlay .brand img {
-		filter: brightness(0) invert(1);
 	}
 
 	/* Pinned state: after you scroll past the top, the header leaves the page flow and
@@ -162,7 +204,7 @@ const isOverlay = path === '/' || path === '/gallery';
 		header.is-fixed.is-shown,
 		header.overlay::before,
 		.internal-links a,
-		.internal-links a::after {
+		.nav-lens {
 			transition: none;
 		}
 	}
@@ -181,16 +223,12 @@ const isOverlay = path === '/' || path === '/gallery';
 	/* The floating header's colors come from three variables, so they can follow the theme */
 	header.overlay {
 		--nav-fg: #fff;
-		--nav-img: brightness(0) invert(1);
 		--nav-backdrop: rgba(10, 14, 25, 0.9);
 	}
 	header.overlay nav a,
 	header.overlay .brand,
 	header.overlay .brand span {
 		color: var(--nav-fg);
-	}
-	header.overlay .brand img {
-		filter: var(--nav-img);
 	}
 	header.overlay::before {
 		background: var(--nav-backdrop);
@@ -199,7 +237,6 @@ const isOverlay = path === '/' || path === '/gallery';
 	:global(:root[data-theme='light']) header.overlay.is-fixed,
 	:global(:root[data-theme='light']) header.overlay:not(.over-photo) {
 		--nav-fg: #111827;
-		--nav-img: none;
 		--nav-backdrop: rgba(245, 243, 238, 0.92);
 	}
 	:global(:root[data-theme='light']) header.overlay.is-fixed {
@@ -208,13 +245,24 @@ const isOverlay = path === '/' || path === '/gallery';
 	:global(:root[data-theme='light']) header.overlay:not(.over-photo):not(.is-fixed) {
 		background: linear-gradient(to bottom, rgba(245, 243, 238, 0.85), rgba(245, 243, 238, 0));
 	}
-	/* The About page's bar */
+	/* Glass lens on light backgrounds (light mode bars, and the plain bar on other pages):
+	   a bright, milky piece of glass with a faint dark edge so it still reads */
+	:global(:root[data-theme='light']) header.overlay.is-fixed,
+	:global(:root[data-theme='light']) header.overlay:not(.over-photo),
+	header:not(.overlay) {
+		--lens-tint: rgba(255, 255, 255, 0.55);
+		--lens-sheen: rgba(255, 255, 255, 0.7);
+		--lens-rim: rgba(17, 24, 39, 0.08);
+		--lens-highlight: rgba(255, 255, 255, 0.95);
+		--lens-shadow: rgba(17, 24, 39, 0.1);
+	}
+	/* The plain bar used on pages without a photo behind the header (like "page not found") */
 	header:not(.overlay) nav a {
 		color: rgb(var(--black));
 	}
-	:global(:root[data-theme='dark']) header:not(.overlay) .brand img {
-		filter: brightness(0) invert(1);
-	}	
+	header:not(.overlay) .brand {
+		color: rgb(var(--black));
+	}
 </style>
 
 <script>
@@ -292,4 +340,65 @@ if (nav?.type === 'reload') {
 		},
 		{ passive: true }
 	);
+
+	// ---- Glass lens ----------------------------------------------------------
+	const linksBox = header.querySelector<HTMLElement>('.internal-links');
+	const lens = header.querySelector<HTMLElement>('.nav-lens');
+	const lensShape = header.querySelector<HTMLElement>('.nav-lens-shape');
+	if (linksBox && lens && lensShape) {
+		const links = [...linksBox.querySelectorAll<HTMLAnchorElement>('a')];
+		const current = links.find((a) => a.classList.contains('active')) ?? null;
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let target: HTMLAnchorElement | null = null;
+
+		// Move the glass behind a link (or hide it if there's no link to sit behind)
+		function moveTo(link: HTMLAnchorElement | null, animate = true) {
+			// appearing from nowhere: place it first, then just fade it in
+			if (!lens!.classList.contains('is-on')) animate = false;
+			if (!animate || reduce) lens!.classList.add('no-anim');
+			links.forEach((a) => a.classList.toggle('is-lensed', a === link && link !== current));
+			if (!link) {
+				lens!.classList.remove('is-on');
+			} else {
+				const extra = 6; // a little wider than the word
+				lens!.style.setProperty('--lens-x', `${link.offsetLeft - extra / 2}px`);
+				lens!.style.setProperty('--lens-w', `${link.offsetWidth + extra}px`);
+				// a liquid stretch while it travels between links, then it settles
+				if (animate && !reduce && target && link !== target && lens!.classList.contains('is-on')) {
+					lensShape!.animate(
+						[
+							{ transform: 'scale(1, 1)' },
+							{ transform: 'scale(1.14, 0.88)', offset: 0.35 },
+							{ transform: 'scale(0.97, 1.03)', offset: 0.7 },
+							{ transform: 'scale(1, 1)' },
+						],
+						{ duration: 560, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+					);
+				}
+				lens!.classList.add('is-on');
+			}
+			target = link;
+			if (!animate || reduce) {
+				void lens!.offsetWidth;
+				lens!.classList.remove('no-anim');
+			}
+		}
+
+		links.forEach((a) => {
+			a.addEventListener('mouseenter', () => moveTo(a));
+			a.addEventListener('focus', () => moveTo(a));
+		});
+		linksBox.addEventListener('mouseleave', () => moveTo(current));
+		linksBox.addEventListener('focusout', (e) => {
+			if (!linksBox.contains(e.relatedTarget as Node)) moveTo(current);
+		});
+
+		// Start on the current page's link, and keep it lined up when the bar changes size
+		// (pinning changes the link spacing) or the fonts finish loading
+		const settle = () => moveTo(target ?? current, false);
+		settle();
+		document.fonts?.ready.then(settle);
+		window.addEventListener('resize', settle);
+		new MutationObserver(settle).observe(header, { attributes: true, attributeFilter: ['class'] });
+	}
 </script>

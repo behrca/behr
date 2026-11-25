@@ -1,0 +1,899 @@
+---
+// "Where I've shot" map on the home page.
+//
+// To add a place: copy one of the blocks below and change it.
+//   lat / lng   the pin's position (right-click a spot in Google Maps to copy them)
+//   photos      file names from /public, without the slash. Each one links to that photo
+//               in the gallery, so it must also be in the gallery's photo list.
+//               Leave the list empty and placeholder tiles show instead.
+//   hidden      true keeps a place off the map without deleting it. Delete that line
+//               (or set it to false) to show the place again.
+const allPlaces = [
+	{
+		id: 'whitehorse',
+		name: 'Whitehorse',
+		region: 'Yukon, Canada',
+		lat: 60.7212,
+		lng: -135.0568,
+		blurb:
+			'The capital of Canada’s Yukon Territory, sitting on the banks of the Yukon River. It grew up as a stop for prospectors during the Klondike Gold Rush and is now the jumping-off point for the wilderness of the far north.',
+		photos: [
+			{ src: 'hero.jpg', alt: 'River running through a forested mountain valley' },
+			{ src: 'klondike-peaks.jpg', alt: 'Rounded mountains above a hillside of spruce trees' },
+			{ src: 'river-canyon.jpg', alt: 'A turquoise river winding through a forested canyon' },
+		],
+	},
+	{
+		id: 'skagway',
+		name: 'Skagway',
+		region: 'Alaska',
+		lat: 59.4583,
+		lng: -135.3139,
+		blurb:
+			'A small gold-rush town at the top of Alaska’s Inside Passage. In 1897–98 thousands of stampeders came through on their way to the Klondike, and the White Pass & Yukon Route railway still climbs the cliffs above town.',
+		photos: [
+			{ src: 'hero-4.jpg', alt: 'Passenger train on a cliffside track' },
+			{ src: 'nature.jpg', alt: 'Mountains and forest near Skagway' },
+			{ src: 'white-pass-valley.jpg', alt: 'A deep green valley leading toward jagged mountains' },
+		],
+	},
+	{
+		id: 'juneau',
+		name: 'Juneau',
+		region: 'Alaska',
+		lat: 58.3019,
+		lng: -134.4197,
+		blurb:
+			'Alaska’s capital, and one of the only state capitals you can’t drive to: it’s reached by boat or plane. It’s known for the Mendenhall Glacier and for humpback whales that feed in the surrounding waters every summer.',
+		photos: [
+			{ src: 'hero-2.jpg', alt: 'Whale spouts glowing in evening light' },
+			{ src: 'juneau-whale-tail.jpg', alt: "A humpback whale's tail rising out of blue water" },
+			{ src: 'juneau-fishing-boat.jpg', alt: 'A fishing boat on calm water off a forested shore' },
+		],
+	},
+	{
+		id: 'glacier-bay',
+		name: 'Glacier Bay',
+		region: 'Alaska',
+		lat: 58.75,
+		lng: -136.85,
+		blurb:
+			'A national park where tidewater glaciers meet the sea. A little over two hundred years ago the bay was almost completely filled with ice; today it reaches more than 60 miles inland between steep, snowy mountains.',
+		photos: [
+			{ src: 'glacier-bay-glacier.jpg', alt: 'A wide glacier face between mountains with ice floating in front' },
+			{ src: 'glacier-bay-mountain.jpg', alt: 'A snow-covered mountain rising above turquoise water' },
+			{ src: 'glacier-bay-iceberg.jpg', alt: 'A small white iceberg floating on calm water' },
+		],
+	},
+	{
+		id: 'ketchikan',
+		hidden: true, // hidden until there are photos from here
+		name: 'Ketchikan',
+		region: 'Alaska',
+		lat: 55.3422,
+		lng: -131.6461,
+		blurb:
+			'Called the “Salmon Capital of the World,” Ketchikan is the first stop on the Inside Passage heading north. It’s famous for its totem poles, the historic boardwalk of Creek Street, and a lot of rain.',
+		photos: [],
+	},
+	{
+		id: 'seattle',
+		name: 'Seattle',
+		region: 'Washington',
+		lat: 47.6205,
+		lng: -122.3493,
+		blurb:
+			'The largest city in the Pacific Northwest, set between Puget Sound and the Cascade Mountains. The Space Needle, built for the 1962 World’s Fair, still crowns the skyline, and it’s where many Alaska cruises begin.',
+		photos: [{ src: 'space-needle.jpg', alt: 'The top of the Space Needle against a grey sky' }],
+	},
+	{
+		id: 'nashville',
+		hidden: true, // hidden until there are photos from here
+		name: 'Nashville',
+		region: 'Tennessee',
+		lat: 36.1627,
+		lng: -86.7816,
+		blurb:
+			'Tennessee’s capital, better known as Music City. It’s the home of country music and the Grand Ole Opry, with live music spilling out of the honky-tonks along Broadway every night of the week.',
+		photos: [],
+	},
+	{
+		id: 'iowa',
+		name: 'Iowa',
+		region: 'Midwest, United States',
+		lat: 41.95,
+		lng: -93.4,
+		blurb:
+			'The heart of the Corn Belt. Central Iowa is wide-open farmland in every direction, and in summer the sky above the fields belongs to the crop dusters flying low over the rows.',
+		photos: [
+			{ src: 'hero-3.jpg', alt: 'Spray aircraft flying above corn fields' },
+			{ src: 'aviation.jpg', alt: 'Aircraft photographed in Iowa' },
+		],
+	},
+];
+
+// Only the places that aren't hidden appear on the map and in the list
+const places = allPlaces.filter((p) => !('hidden' in p && p.hidden));
+
+const PLACEHOLDER_TILES = 3;
+---
+
+<section class="places" id="places" data-places={JSON.stringify(places)}>
+	<div class="places-head">
+		<p class="kicker">Places</p>
+		<h2>Where I’ve shot</h2>
+		<p class="places-sub">Tap a pin to see what’s there and a few of the photos I took.</p>
+	</div>
+
+	<div class="places-body">
+		<div class="map-col">
+			<div class="map-frame">
+				<div class="map" aria-label="Map of places I've photographed"></div>
+				<p class="zoom-hint" aria-hidden="true">
+					<span>Pinch to zoom, or hold <kbd class="zoom-hint-key">⌘</kbd> while scrolling</span>
+				</p>
+				<div class="zoom" role="group" aria-label="Map zoom">
+					<button type="button" data-zoom="in" aria-label="Zoom in">
+						<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"></path></svg>
+					</button>
+					<button type="button" data-zoom="out" aria-label="Zoom out">
+						<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10"></path></svg>
+					</button>
+				</div>
+			</div>
+			<!-- OpenStreetMap's license asks for this credit to be shown near the map -->
+			<p class="map-credit">
+				Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors
+			</p>
+		</div>
+
+		<aside class="panel" aria-live="polite">
+			<!-- Starting view: a list of every place -->
+			<div class="panel-list" data-view="list">
+				<p class="panel-hint">Pick a place</p>
+				<ul>
+					{
+						places.map((p) => (
+							<li>
+								<button type="button" class="place-btn" data-id={p.id}>
+									<span class="place-name">{p.name}</span>
+									<span class="place-region">{p.region}</span>
+									<span class="place-arrow" aria-hidden="true">→</span>
+								</button>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+
+			<!-- One view per place, shown when its pin or button is picked -->
+			{
+				places.map((p) => (
+					<div class="panel-place" data-view={p.id} hidden>
+						<button type="button" class="back" data-back>
+							← All places
+						</button>
+						<p class="place-region">{p.region}</p>
+						<h3>{p.name}</h3>
+						<p class="blurb">{p.blurb}</p>
+						<p class="thumbs-label">Photos from here</p>
+						<div class="thumbs">
+							{p.photos.length > 0
+								? p.photos.slice(0, 3).map((ph) => (
+										<a
+											class="thumb"
+											href={`/gallery?photo=${ph.src.replace(/\.[^.]+$/, '')}`}
+										>
+											<img src={`/${ph.src}`} alt={ph.alt} loading="lazy" decoding="async" />
+										</a>
+									))
+								: Array.from({ length: PLACEHOLDER_TILES }).map(() => (
+										<div class="thumb placeholder" aria-hidden="true">
+											<span>Coming soon</span>
+										</div>
+									))}
+						</div>
+					</div>
+				))
+			}
+		</aside>
+	</div>
+</section>
+
+<script>
+	import L from 'leaflet';
+	import 'leaflet/dist/leaflet.css';
+
+	type Place = { id: string; name: string; region: string; lat: number; lng: number };
+
+	const section = document.querySelector<HTMLElement>('.places');
+	const mapEl = section?.querySelector<HTMLElement>('.map');
+
+	if (section && mapEl) {
+		const places: Place[] = JSON.parse(section.dataset.places ?? '[]');
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		const map = L.map(mapEl, {
+			zoomControl: false, // replaced by the site-styled buttons in the markup above
+			attributionControl: false, // the credit is shown as a caption under the map instead
+			scrollWheelZoom: false, // replaced by the smoother handler below
+			dragging: !L.Browser.mobile, // on phones one finger scrolls the page; pinch or + / − to zoom
+			zoomSnap: 0, // allows in-between zoom levels, so trackpad zooming is smooth
+			minZoom: 2,
+			maxZoom: 12,
+		});
+
+		// Zooming over the map, without getting in the way of scrolling the page:
+		//   pinch on a trackpad            → zooms the map (arrives as a wheel event with ctrlKey
+		//                                    set in Chrome / Firefox / Edge, or "gesture" events in Safari)
+		//   ⌘ (Mac) or Ctrl + scroll/wheel → zooms the map, for mouse users
+		//   plain scroll / wheel           → scrolls the page as normal, and a short hint appears
+		//                                    on the map explaining how to zoom
+		const PINCH_SPEED = 0.012; // zoom levels per pixel of pinch; raise to zoom faster
+		const WHEEL_SPEED = 0.004; // zoom levels per pixel of scroll
+		const clampZoom = (z: number) => Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), z));
+
+		// While zooming, the map moves smoothly through in-between levels. Once the fingers stop,
+		// it settles on the next whole level in the direction you were going, so the map is
+		// always crisp at rest (in-between levels stretch the map images slightly).
+		let pendingZoom = 0; // zoom waiting to be applied on the next animation frame
+		let lastPoint = L.point(0, 0);
+		let frame = 0;
+		let gestureFrom: number | null = null;
+		let settleTimer = 0;
+		function trackGesture(point: L.Point) {
+			if (gestureFrom === null) gestureFrom = map.getZoom();
+			window.clearTimeout(settleTimer);
+			settleTimer = window.setTimeout(() => {
+				// fold in any zoom step still waiting for the next frame
+				if (frame) cancelAnimationFrame(frame);
+				frame = 0;
+				const z = clampZoom(map.getZoom() + pendingZoom);
+				pendingZoom = 0;
+				const from = gestureFrom ?? z;
+				gestureFrom = null;
+				const target = clampZoom(
+					Math.abs(z - Math.round(z)) < 0.05 ? Math.round(z) : z > from ? Math.ceil(z) : Math.floor(z)
+				);
+				if (target !== map.getZoom()) map.setZoomAround(point, target, { animate: !reduceMotion });
+			}, 180);
+		}
+
+		// The hint that fades in over the map when someone scrolls across it
+		const hint = section.querySelector<HTMLElement>('.zoom-hint');
+		const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+		const hintKey = section.querySelector<HTMLElement>('.zoom-hint-key');
+		if (hintKey) hintKey.textContent = isMac ? '⌘' : 'Ctrl';
+		let hintTimer = 0;
+		function showHint() {
+			if (!hint) return;
+			hint.classList.add('show');
+			window.clearTimeout(hintTimer);
+			hintTimer = window.setTimeout(() => hint.classList.remove('show'), 1400);
+		}
+
+		mapEl.addEventListener(
+			'wheel',
+			(e) => {
+				if (!e.ctrlKey && !e.metaKey) {
+					showHint(); // let the page scroll; just remind people how to zoom
+					return;
+				}
+				e.preventDefault();
+				e.stopPropagation();
+				const px = e.deltaMode === 1 ? e.deltaY * 20 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+				// A trackpad pinch sends many small steps; a mouse wheel click sends one big one
+				const pinch = e.ctrlKey && Math.abs(px) < 50;
+				pendingZoom -= px * (pinch ? PINCH_SPEED : WHEEL_SPEED);
+				lastPoint = map.mouseEventToContainerPoint(e);
+				trackGesture(lastPoint);
+				if (!frame) {
+					frame = requestAnimationFrame(() => {
+						frame = 0;
+						const z = clampZoom(map.getZoom() + pendingZoom);
+						pendingZoom = 0;
+						map.setZoomAround(lastPoint, z, { animate: false });
+					});
+				}
+			},
+			{ passive: false }
+		);
+
+		// Safari: e.scale is how far the fingers have spread (2 = twice as far apart = one level in)
+		type SafariGesture = Event & { scale: number; clientX: number; clientY: number };
+		let gestureStartZoom = 0;
+		mapEl.addEventListener(
+			'gesturestart',
+			(e) => {
+				e.preventDefault();
+				gestureStartZoom = map.getZoom();
+			},
+			{ passive: false }
+		);
+		mapEl.addEventListener(
+			'gesturechange',
+			(e) => {
+				e.preventDefault();
+				const g = e as SafariGesture;
+				const point = map.mouseEventToContainerPoint(g as unknown as MouseEvent);
+				trackGesture(point);
+				map.setZoomAround(point, clampZoom(gestureStartZoom + Math.log2(g.scale)), { animate: false });
+			},
+			{ passive: false }
+		);
+		mapEl.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
+
+		section.querySelectorAll<HTMLButtonElement>('[data-zoom]').forEach((btn) =>
+			btn.addEventListener('click', () =>
+				btn.dataset.zoom === 'in' ? map.zoomIn() : map.zoomOut()
+			)
+		);
+
+		// Map tiles from OpenStreetMap (free, no key). They're recolored with CSS to match
+		// the site's light / dark theme — see ".map-tiles" in the styles below.
+		L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			maxZoom: 12,
+			className: 'map-tiles',
+		}).addTo(map);
+
+		const bounds = L.latLngBounds(places.map((p) => [p.lat, p.lng] as [number, number]));
+		// Whole-number zoom that fits every pin, so the overview is always crisp
+		const allZoom = () => Math.floor(map.getBoundsZoom(bounds, false, L.point(80, 80)));
+		const showAll = (animate: boolean) =>
+			map.flyTo(bounds.getCenter(), allZoom(), { duration: animate && !reduceMotion ? 1.2 : 0 });
+		map.setView(bounds.getCenter(), allZoom());
+
+		// Pins
+		const markers = new Map<string, L.Marker>();
+		places.forEach((p) => {
+			const marker = L.marker([p.lat, p.lng], {
+				icon: L.divIcon({
+					className: 'map-pin',
+					html: '<span class="pin-ring"></span><span class="pin-dot"></span>',
+					iconSize: [22, 22],
+					iconAnchor: [11, 11],
+				}),
+				title: p.name,
+				keyboard: true,
+				riseOnHover: true,
+			})
+				.bindTooltip(p.name, { direction: 'top', offset: [0, -12], className: 'pin-label' })
+				.on('click', () => select(p.id))
+				.addTo(map);
+			markers.set(p.id, marker);
+		});
+
+		// Switching between the list and one place
+		const views = section.querySelectorAll<HTMLElement>('[data-view]');
+		function show(view: string) {
+			views.forEach((v) => (v.hidden = v.dataset.view !== view));
+		}
+
+		let selected: string | null = null; // the place currently zoomed in on, if any
+
+		function select(id: string) {
+			const p = places.find((x) => x.id === id);
+			if (!p) return;
+			selected = id;
+			show(id);
+			markers.forEach((m, key) => m.getElement()?.classList.toggle('active', key === id));
+			map.flyTo([p.lat, p.lng], 8, { duration: reduceMotion ? 0 : 1.2 });
+		}
+
+		function reset() {
+			selected = null;
+			show('list');
+			markers.forEach((m) => {
+				m.getElement()?.classList.remove('active');
+				m.closeTooltip();
+			});
+			showAll(true);
+		}
+
+		section.querySelectorAll<HTMLButtonElement>('.place-btn').forEach((btn) =>
+			btn.addEventListener('click', () => select(btn.dataset.id!))
+		);
+		section.querySelectorAll('[data-back]').forEach((btn) => btn.addEventListener('click', reset));
+
+		// Clicking anywhere on the map that isn't a pin goes back to the overview.
+		// (Pin clicks don't reach here, and Leaflet ignores the "click" at the end of a drag.)
+		map.on('click', () => {
+			if (selected) reset();
+		});
+
+		// The map is built before the page finishes laying out; make sure it knows its real size
+		window.addEventListener('load', () => {
+			map.invalidateSize();
+			map.setView(bounds.getCenter(), allZoom());
+		});
+	}
+</script>
+<script>
+	import { gsap } from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+	gsap.registerPlugin(ScrollTrigger);
+
+	// refreshPriority -1: the "Latest work" section above is pinned while you scroll through it,
+	// which pushes this section further down the page. These triggers measure their positions
+	// after that pinning is set up, so they start at the right moment.
+
+	// Same scroll-in feel as the rest of the home page: heading rises, then the map and panel follow
+	if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		gsap.fromTo(
+			'.places-head > *',
+			{ y: 40, opacity: 0 },
+			{
+				y: 0,
+				opacity: 1,
+				ease: 'none',
+				stagger: 0.12,
+				scrollTrigger: { trigger: '.places', start: 'top 85%', end: 'top 40%', scrub: 0.8, refreshPriority: -1 },
+			}
+		);
+		// The map opens up as you scroll to it: it starts as a smaller, rounded window and
+		// widens to full size while the map inside settles from slightly zoomed in.
+		// Tied to scroll like the rest of the page, so scrolling back up reverses it.
+		gsap
+			.timeline({
+				scrollTrigger: {
+					trigger: '.places-body',
+					start: 'top 95%',
+					end: 'top 35%',
+					scrub: 0.8,
+					refreshPriority: -1,
+				},
+			})
+			.fromTo(
+				'.places .map-col',
+				{ y: 40, opacity: 0 },
+				{ y: 0, opacity: 1, ease: 'none', duration: 0.5 },
+				0
+			)
+			.fromTo(
+				'.places .map-frame',
+				{ clipPath: 'inset(10% 10% 10% 10% round 24px)' },
+				{ clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'none', duration: 1 },
+				0
+			)
+			.fromTo('.places .map', { scale: 1.08 }, { scale: 1, ease: 'none', duration: 1 }, 0)
+			.fromTo(
+				'.places .panel',
+				{ y: 40, opacity: 0 },
+				{ y: 0, opacity: 1, ease: 'none', duration: 0.6 },
+				0.35
+			);
+
+		// Once the map is mostly open, the pins appear one after another (plays once).
+		// Only the pin's opacity and its inner dot are animated: the map itself positions
+		// each pin with a transform, so that has to be left alone.
+		// The pins start hidden by a class (they may not exist yet when this runs)
+		document.querySelector('.places')?.classList.add('pins-waiting');
+		ScrollTrigger.create({
+			trigger: '.places-body',
+			start: 'top 55%',
+			once: true,
+			refreshPriority: -1,
+			onEnter: () => {
+				const pins = gsap.utils.toArray<HTMLElement>('.places .map-pin');
+				gsap.set(pins, { opacity: 0 });
+				document.querySelector('.places')?.classList.remove('pins-waiting');
+				pins.forEach((pin, i) => {
+					const delay = i * 0.09;
+					gsap.to(pin, { opacity: 1, duration: 0.5, ease: 'power2.out', delay });
+					gsap.fromTo(
+						pin.querySelector('.pin-dot'),
+						{ y: -10 },
+						{ y: 0, duration: 0.5, ease: 'power2.out', delay, clearProps: 'transform' }
+					);
+				});
+			},
+		});
+	}
+</script>
+
+<style>
+	.places {
+		position: relative;
+		z-index: 1;
+		padding: 7rem 6vw;
+		background: var(--site-bg);
+		color: var(--site-fg);
+	}
+	.places-head {
+		margin-bottom: 2.5rem;
+	}
+	.places-head .kicker {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin: 0 0 0.75rem;
+		font-size: 0.75rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--site-fg-3);
+	}
+	.places-head .kicker::after {
+		content: '';
+		width: 120px;
+		height: 1px;
+		background: var(--site-line);
+	}
+	.places-head h2 {
+		margin: 0 0 0.75rem;
+		font-family: var(--font-display);
+		font-weight: 400;
+		letter-spacing: -0.02em;
+		font-size: clamp(2rem, 5vw, 3.5rem);
+		line-height: 1.05;
+		color: var(--site-fg);
+	}
+	.places-sub {
+		margin: 0;
+		color: var(--site-fg-2);
+	}
+
+	.places-body {
+		display: grid;
+		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+		gap: 2rem;
+		align-items: stretch;
+	}
+	.map-col {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+	/* No box around the map: its edges fade softly into the page, so it reads as part of it */
+	.map-frame {
+		position: relative;
+		flex: 1;
+		min-height: 560px;
+		overflow: hidden;
+		isolation: isolate; /* keeps Leaflet's layers under the site header */
+		-webkit-mask-image:
+			linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
+			linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+		-webkit-mask-composite: source-in;
+		mask-image:
+			linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
+			linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+		mask-composite: intersect;
+	}
+
+	/* Zoom buttons: thin round outlines like the theme switch in the header */
+	.zoom {
+		position: absolute;
+		right: 9%;
+		bottom: 12%;
+		z-index: 500; /* above Leaflet's map layers */
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		opacity: 0.55;
+		transition: opacity 0.3s ease;
+	}
+	.map-frame:hover .zoom,
+	.zoom:focus-within {
+		opacity: 1;
+	}
+	.zoom button {
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		/* small pieces of glass, like the theme switch and the menu */
+		border: 1px solid rgba(255, 255, 255, 0.45);
+		border-radius: 50%;
+		background:
+			linear-gradient(to bottom, rgba(255, 255, 255, 0.35), transparent 70%),
+			rgba(var(--site-bg-rgb), 0.45);
+		-webkit-backdrop-filter: blur(10px) saturate(1.6);
+		backdrop-filter: blur(10px) saturate(1.6);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.6),
+			0 4px 14px rgba(0, 0, 0, 0.15);
+		color: var(--site-fg);
+		cursor: pointer;
+		transition: border-color 0.25s ease, background-color 0.25s ease;
+	}
+	.zoom button:hover,
+	.zoom button:focus-visible {
+		border-color: var(--site-fg);
+		background: rgba(var(--site-bg-rgb), 0.95);
+	}
+	.zoom svg {
+		width: 14px;
+		height: 14px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.4;
+		stroke-linecap: round;
+	}
+
+	/* Pins stay hidden until the map has opened (see the scroll animation script) */
+	.places.pins-waiting :global(.map-pin) {
+		opacity: 0;
+	}
+
+	/* "How to zoom" hint: fades in when someone scrolls over the map without zooming */
+	.zoom-hint {
+		position: absolute;
+		inset: 0;
+		z-index: 600;
+		display: grid;
+		place-items: center;
+		margin: 0;
+		padding: 0 10%;
+		text-align: center;
+		font-size: 0.95rem;
+		letter-spacing: 0.02em;
+		color: var(--site-fg);
+		background: rgba(var(--site-bg-rgb), 0.55);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.35s ease;
+	}
+	.zoom-hint.show {
+		opacity: 1;
+	}
+	.zoom-hint kbd {
+		display: inline-block;
+		margin: 0 0.15em;
+		padding: 0.1em 0.5em;
+		border: 1px solid var(--site-line);
+		border-radius: 6px;
+		font-family: inherit;
+		font-size: 0.9em;
+	}
+
+	.map-credit {
+		margin: 0;
+		padding-left: 7%;
+		font-size: 0.65rem;
+		letter-spacing: 0.08em;
+		color: var(--site-fg-3);
+	}
+	.map-credit a {
+		color: inherit;
+		text-decoration: none;
+		border-bottom: 1px solid var(--site-line);
+	}
+	.map-credit a:hover {
+		color: var(--site-fg);
+	}
+	.map {
+		position: absolute;
+		inset: 0;
+		background: var(--site-surface);
+	}
+
+	/* Side panel */
+	.panel {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		padding: 1rem 0 1rem 2.5rem;
+		border-left: 1px solid var(--site-line); /* a single hairline instead of a box */
+	}
+	.panel-hint,
+	.thumbs-label {
+		margin: 0 0 1rem;
+		font-size: 0.7rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--site-fg-3);
+	}
+	.panel ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.place-btn {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		grid-template-areas: 'name arrow' 'region arrow';
+		align-items: center;
+		width: 100%;
+		padding: 0.9rem 0;
+		border: 0;
+		border-bottom: 1px solid var(--site-line);
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+	.place-btn .place-name {
+		grid-area: name;
+		font-family: var(--font-display);
+		font-size: 1.25rem;
+		font-weight: 400;
+	}
+	.place-btn .place-region {
+		grid-area: region;
+	}
+	.place-arrow {
+		grid-area: arrow;
+		color: var(--site-fg-3);
+		transition: transform 0.3s ease, color 0.3s ease;
+	}
+	.place-btn:hover .place-arrow,
+	.place-btn:focus-visible .place-arrow {
+		transform: translateX(4px);
+		color: var(--site-fg);
+	}
+	.place-region {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--site-fg-3);
+	}
+
+	.panel-place h3 {
+		margin: 0.25rem 0 1rem;
+		font-family: var(--font-display);
+		font-weight: 400;
+		letter-spacing: -0.02em;
+		font-size: clamp(1.8rem, 3vw, 2.4rem);
+		line-height: 1.05;
+		color: var(--site-fg);
+	}
+	.back {
+		margin: 0 0 1.5rem;
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--site-fg-2);
+		font: inherit;
+		font-size: 0.75rem;
+		letter-spacing: 0.25em;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+	.back:hover,
+	.back:focus-visible {
+		color: var(--site-fg);
+	}
+	.blurb {
+		margin: 0 0 2rem;
+		line-height: 1.7;
+		color: var(--site-fg-2);
+	}
+
+	.thumbs {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.6rem;
+	}
+	.thumb {
+		display: block;
+		aspect-ratio: 1;
+		border-radius: 10px;
+		overflow: hidden;
+		background: var(--site-surface);
+	}
+	.thumb img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+	}
+	a.thumb:hover img,
+	a.thumb:focus-visible img {
+		transform: scale(1.08);
+	}
+	.thumb.placeholder {
+		display: grid;
+		place-items: center;
+		border: 1px dashed var(--site-line);
+		background: transparent;
+	}
+	.thumb.placeholder span {
+		font-size: 0.6rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--site-fg-3);
+		text-align: center;
+	}
+
+	/* Pins (Leaflet puts these outside this component's scope, hence :global) */
+	:global(.map-pin) {
+		background: none;
+		border: 0;
+	}
+	:global(.map-pin .pin-dot) {
+		position: absolute;
+		inset: 5px;
+		border-radius: 50%;
+		background: #e8a33d;
+		border: 2px solid #fff;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+		transition: transform 0.25s ease;
+	}
+	:global(.map-pin .pin-ring) {
+		position: absolute;
+		inset: 0;
+		border-radius: 50%;
+		background: rgba(232, 163, 61, 0.35);
+		animation: pin-pulse 2.4s ease-out infinite;
+	}
+	:global(.map-pin:hover .pin-dot),
+	:global(.map-pin:focus-visible .pin-dot),
+	:global(.map-pin.active .pin-dot) {
+		transform: scale(1.3);
+	}
+	:global(.map-pin.active .pin-dot) {
+		background: #fff;
+		border-color: #e8a33d;
+	}
+	@keyframes pin-pulse {
+		0% {
+			transform: scale(0.6);
+			opacity: 1;
+		}
+		100% {
+			transform: scale(1.8);
+			opacity: 0;
+		}
+	}
+	:global(.leaflet-tooltip.pin-label) {
+		padding: 0.3rem 0.6rem;
+		border: 0;
+		border-radius: 6px;
+		background: #111827;
+		color: #fff;
+		font-size: 0.75rem;
+		letter-spacing: 0.05em;
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+	}
+	:global(.leaflet-tooltip.pin-label::before) {
+		border-top-color: #111827;
+	}
+	:global(.places .leaflet-container) {
+		font-family: inherit;
+		background: var(--site-bg);
+	}
+	:global(.places .leaflet-control-attribution) {
+		font-size: 0.6rem;
+	}
+	/* Tile colors: a soft, muted map in light mode and an inverted night map in dark mode */
+	:global(.places .map-tiles img) {
+		filter: grayscale(0.85) contrast(0.95) brightness(1.03) sepia(0.12);
+	}
+	:global(:root[data-theme='dark'] .places .map-tiles img) {
+		filter: invert(1) hue-rotate(180deg) grayscale(0.7) brightness(0.85) contrast(0.9);
+	}
+
+	@media (max-width: 900px) {
+		.places {
+			padding: 5rem 6vw;
+		}
+		.places-body {
+			grid-template-columns: 1fr;
+		}
+		.map-frame {
+			min-height: 0;
+			aspect-ratio: 4 / 3;
+		}
+		.zoom {
+			opacity: 1;
+		}
+		.panel {
+			padding: 2rem 0 0;
+			border-left: 0;
+			border-top: 1px solid var(--site-line);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(.map-pin .pin-ring) {
+			animation: none;
+		}
+		.thumb img,
+		.place-arrow {
+			transition: none;
+		}
+	}
+</style>

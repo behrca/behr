@@ -24,29 +24,18 @@
 	--site-fg-3: rgba(17, 24, 39, 0.6);
 	--site-line: rgba(17, 24, 39, 0.3);
 }
-@font-face {
-	font-family: "Atkinson";
-	src: url("/fonts/atkinson-regular.woff") format("woff");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: "Atkinson";
-	src: url("/fonts/atkinson-bold.woff") format("woff");
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Portland';
-	src: url('/fonts/Portland_Bold.ttf') format('truetype');
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
+/* Site fonts. Change a font here and it changes everywhere it's used.
+   They're loaded in src/components/BaseHead.astro. */
+:root {
+	--font-body: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+	--font-display: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+	--font-brand: 'Optima', 'Zapf Humanist 601', 'Tenor Sans', 'Candara', sans-serif;
 }
 body {
-	font-family: "Atkinson", sans-serif;
+	font-family: var(--font-body);
+	font-weight: 350;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 	margin: 0;
 	padding: 0;
 	text-align: left;
@@ -73,6 +62,9 @@ h6 {
 	margin: 0 0 0.5rem 0;
 	color: rgb(var(--black));
 	line-height: 1.2;
+	font-family: var(--font-display);
+	font-weight: 400;
+	letter-spacing: -0.02em;
 }
 h1 {
 	font-size: 3.052em;
@@ -91,7 +83,7 @@ h5 {
 }
 strong,
 b {
-	font-weight: 700;
+	font-weight: 500;
 }
 a {
 	color: var(--accent);
@@ -192,4 +184,42 @@ hr {
 }
 :root[data-theme='dark'] body {
 	background-color: #12151c;
+}
+
+/* ---------- Page transitions ----------
+   Moving between pages: the menu bar stays put while the old page softly fades and lifts
+   away, slightly blurred like passing behind glass, and the new page rises in.
+   Uses the browser's built-in cross-page transitions (Safari 18.2+, Chrome); browsers
+   without it simply change pages as normal. Off for people who prefer less motion. */
+@media (prefers-reduced-motion: no-preference) {
+	@view-transition {
+		navigation: auto;
+	}
+}
+header {
+	view-transition-name: site-header; /* the menu doesn't fade with the page */
+}
+::view-transition-old(root) {
+	animation: page-out 0.32s cubic-bezier(0.4, 0, 1, 1) both;
+}
+::view-transition-new(root) {
+	animation: page-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+}
+::view-transition-group(site-header) {
+	animation-duration: 0.45s;
+	animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes page-out {
+	to {
+		opacity: 0;
+		transform: translateY(-10px);
+		filter: blur(6px);
+	}
+}
+@keyframes page-in {
+	from {
+		opacity: 0;
+		transform: translateY(16px);
+		filter: blur(6px);
+	}
 }

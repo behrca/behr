@@ -1,6 +1,7 @@
 ---
 // ThemeToggle.astro: round sun/moon button that switches light and dark mode.
-// The choice is saved in the browser, and the colors change as a ripple growing from the button.
+// The choice is saved in the browser. The button is a small piece of "liquid glass": it squishes
+// like a droplet when pressed, and the new colors spread out from it with a soft, feathered edge.
 ---
 
 <button
@@ -55,14 +56,28 @@
 
 	btn.addEventListener('click', () => {
 		const next = current() === 'dark' ? 'light' : 'dark';
+
+		// a quick liquid squish, like pressing a droplet of glass
+		if (!reduceMotion) {
+			btn.animate(
+				[
+					{ transform: 'scale(1, 1)' },
+					{ transform: 'scale(0.86, 0.9)', offset: 0.25 },
+					{ transform: 'scale(1.08, 1.04)', offset: 0.55 },
+					{ transform: 'scale(0.98, 1)', offset: 0.8 },
+					{ transform: 'scale(1, 1)' },
+				],
+				{ duration: 620, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+			);
+		}
 		try {
 			localStorage.setItem('theme', next);
 		} catch {}
 
 		const doc = document as any;
 
-		// Browsers that can't do the ripple (or visitors who prefer less motion): a soft fade
-		if (!doc.startViewTransition || reduceMotion) {
+		// Browsers that can't do the soft reveal (or visitors who prefer less motion): a gentle fade
+		if (!doc.startViewTransition || reduceMotion || !CSS.supports('mask-image', 'radial-gradient(#000, #000)') || !('registerProperty' in CSS)) {
 			if (!reduceMotion) {
 				root.classList.add('theme-fade');
 				window.setTimeout(() => root.classList.remove('theme-fade'), 500);
@@ -71,19 +86,26 @@
 			return;
 		}
 
-		// The new colors grow out of the button like a ripple
+		// The new colors spread out from the button with a soft, feathered edge
+		// (like light moving through glass rather than a hard-edged circle)
 		const box = btn.getBoundingClientRect();
 		const x = box.left + box.width / 2;
 		const y = box.top + box.height / 2;
-		const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+		const FEATHER = 140; // width of the soft edge, in pixels
+		const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) + FEATHER;
+		root.style.setProperty('--tt-x', `${x}px`);
+		root.style.setProperty('--tt-y', `${y}px`);
+		root.style.setProperty('--tt-feather', `${FEATHER}px`);
 
+		root.classList.add('theme-switching'); // switches on the theme-only transition styles below
 		const transition = doc.startViewTransition(() => apply(next));
+		transition.finished.finally(() => root.classList.remove('theme-switching'));
 		transition.ready.then(() => {
 			root.animate(
-				{ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+				{ '--tt-r': ['0px', `${radius}px`] },
 				{
-					duration: 750,
-					easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
+					duration: 900,
+					easing: 'cubic-bezier(0.45, 0, 0.2, 1)',
 					pseudoElement: '::view-transition-new(root)',
 				}
 			);
@@ -107,12 +129,20 @@
 		width: 40px;
 		height: 40px;
 		padding: 0;
-		border: 1.5px solid currentColor;
+		/* a small piece of glass, matching the glass behind the menu's current page */
+		border: 1px solid var(--lens-rim, rgba(255, 255, 255, 0.35));
 		border-radius: 999px;
-		background: transparent;
+		background:
+			linear-gradient(to bottom, var(--lens-sheen, rgba(255, 255, 255, 0.22)), transparent 70%),
+			var(--lens-tint, rgba(255, 255, 255, 0.1));
+		-webkit-backdrop-filter: blur(8px) saturate(1.6) brightness(1.08);
+		backdrop-filter: blur(8px) saturate(1.6) brightness(1.08);
+		box-shadow:
+			inset 0 1px 0 var(--lens-highlight, rgba(255, 255, 255, 0.55)),
+			0 4px 14px var(--lens-shadow, rgba(0, 0, 0, 0.12));
 		color: var(--nav-fg, rgb(var(--black)));
 		cursor: pointer;
-		opacity: 0.85;
+		opacity: 0.9;
 		transition:
 			opacity 0.25s ease,
 			transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
@@ -171,17 +201,38 @@
 </style>
 
 <style is:global>
-	/* Lets the new theme reveal itself as a circle instead of the browser's default cross-fade */
-	::view-transition-old(root),
-	::view-transition-new(root) {
+	/* The new theme spreads out from the button as a circle with a soft, feathered edge.
+	   --tt-r (the circle's size) is registered so the browser can animate it smoothly. */
+	@property --tt-r {
+		syntax: '<length>';
+		inherits: false;
+		initial-value: 0px;
+	}
+	/* (only while switching themes; page-to-page transitions are in global.css) */
+	html.theme-switching::view-transition-old(root),
+	html.theme-switching::view-transition-new(root) {
 		animation: none;
 		mix-blend-mode: normal;
 	}
-	::view-transition-old(root) {
+	html.theme-switching::view-transition-old(root) {
 		z-index: 1;
 	}
-	::view-transition-new(root) {
+	/* the header changes colors along with the rest of the page while switching themes */
+	html.theme-switching header {
+		view-transition-name: none;
+	}
+	html.theme-switching::view-transition-new(root) {
 		z-index: 2147483646;
+		-webkit-mask-image: radial-gradient(
+			circle at var(--tt-x, 50%) var(--tt-y, 0px),
+			#000 max(0px, calc(var(--tt-r) - var(--tt-feather, 140px))),
+			transparent var(--tt-r)
+		);
+		mask-image: radial-gradient(
+			circle at var(--tt-x, 50%) var(--tt-y, 0px),
+			#000 max(0px, calc(var(--tt-r) - var(--tt-feather, 140px))),
+			transparent var(--tt-r)
+		);
 	}
 
 	/* Fallback for browsers without that feature */

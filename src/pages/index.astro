@@ -4,6 +4,8 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import Intro from '../components/Intro.astro';
+import PhotoMap from '../components/PhotoMap.astro';
+import '../styles/theme.css';
 ---
 
 <!doctype html>
@@ -30,15 +32,18 @@ import Intro from '../components/Intro.astro';
 				<div class="content">
 					<p class="eyebrow">Photography by Behr Carey</p>
 					<h1>
-						Capturing<br />Life’s
-						<span class="words">
-							<em class="word active">Beauty</em>
-							<em class="word">Wonder</em>
-							<em class="word">Freedom</em>
-							<em class="word">Journeys</em>
-						</span>
+						<span class="line"><span class="line-inner">Capturing</span></span>
+						<span class="line"
+							><span class="line-inner"
+								>Life’s<span class="words">
+									<em class="word active">Beauty</em>
+									<em class="word">Wonder</em>
+									<em class="word">Freedom</em>
+									<em class="word">Journeys</em>
+								</span></span
+							></span
+						>
 					</h1>
-					<p class="tagline">Nature. Aviation. More.</p>
 					<a class="button" href="/gallery">
 						<span class="label">View my work</span>
 						<span class="arrow" aria-hidden="true">→</span>
@@ -73,7 +78,7 @@ import Intro from '../components/Intro.astro';
 				</div>
 
 				<div class="cards">
-					<a class="card" href="/gallery">
+					<a class="card" href="/gallery?category=nature">
 						<div class="card-bg" style="background-image: url('/nature.jpg')"></div>
 						<div class="card-shade"></div>
 						<div class="card-body">
@@ -86,7 +91,7 @@ import Intro from '../components/Intro.astro';
 						</div>
 					</a>
 
-					<a class="card" href="/gallery">
+					<a class="card" href="/gallery?category=aviation">
 						<div class="card-bg" style="background-image: url('/aviation.jpg')"></div>
 						<div class="card-shade"></div>
 						<div class="card-body">
@@ -99,7 +104,7 @@ import Intro from '../components/Intro.astro';
 						</div>
 					</a>
 
-					<a class="card" href="/gallery">
+					<a class="card" href="/gallery?category=wildlife">
 						<div class="card-bg" style="background-image: url('/wildlife.jpg')"></div>
 						<div class="card-shade"></div>
 						<div class="card-body">
@@ -107,6 +112,19 @@ import Intro from '../components/Intro.astro';
 							<p>Whales, birds, and the moments that only last a second.</p>
 							<span class="card-button">
 								<span class="label">View Wildlife</span>
+								<span class="arrow" aria-hidden="true">→</span>
+							</span>
+						</div>
+					</a>
+
+					<a class="card" href="/gallery?category=travel">
+						<div class="card-bg" style="background-image: url('/space-needle.jpg')"></div>
+						<div class="card-shade"></div>
+						<div class="card-body">
+							<h3>Travel</h3>
+							<p>Cities, ships, and the places in between, picked up along the way.</p>
+							<span class="card-button">
+								<span class="label">View Travel</span>
 								<span class="arrow" aria-hidden="true">→</span>
 							</span>
 						</div>
@@ -157,6 +175,7 @@ import Intro from '../components/Intro.astro';
 					</div>
 				</div>
 			</section>
+			<PhotoMap />
 			<section class="about-teaser">
 				<div class="about-photo">
 					<div
@@ -183,13 +202,38 @@ import Intro from '../components/Intro.astro';
 				</a>
 			</section>
 		</main>
-				<div class="copyright-tip" id="copyright-tip" role="status" aria-live="polite">
-			© Behr Carey. All rights reserved.
-		</div>
 		<Footer />
 	</body>
 </html>
 
+<script>
+	// Hero entrance: plays once the opening logo animation (Intro.astro) says it's done.
+	// The headline lines rise out of their masks, then the small line above it, the
+	// button and the scroll arrow fade up. Same easing as the rest of the site.
+	// (theme.css keeps these hidden until this runs; with reduced motion they just show.)
+	import { gsap } from 'gsap';
+
+	function playHeroEntrance() {
+		const tl = gsap.timeline();
+		tl.fromTo(
+			'.hero .line-inner',
+			{ y: 0, yPercent: 115 }, // y: 0 replaces the CSS starting offset instead of adding to it
+			{ y: 0, yPercent: 0, duration: 1.1, ease: 'power3.out', stagger: 0.12 }
+		)
+			.fromTo(
+				['.hero .eyebrow', '.hero .button'],
+				{ opacity: 0, y: 16 },
+				{ opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.1, clearProps: 'transform' },
+				0.35
+			)
+			.to('.hero .scroll-cue', { opacity: 1, duration: 0.8, ease: 'power1.out' }, 0.8);
+	}
+
+	if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		if ((window as any).heroRevealed) playHeroEntrance();
+		else window.addEventListener('hero:reveal', playHeroEntrance, { once: true });
+	}
+</script>
 <script>
 	const bgs = document.querySelectorAll('.bg');
 	const words = document.querySelectorAll('.word');
@@ -369,30 +413,6 @@ import Intro from '../components/Intro.astro';
 		window.addEventListener('load', () => ScrollTrigger.refresh());
 	}
 </script>
-<script>
-	const tip = document.getElementById('copyright-tip') as HTMLElement;
-	let tipTimer: number | undefined;
-
-	function showTip(x: number, y: number) {
-		const half = tip.offsetWidth / 2 + 12;
-		tip.style.left = `${Math.min(Math.max(x, half), window.innerWidth - half)}px`;
-		tip.style.top = `${Math.max(y - 16, tip.offsetHeight + 16)}px`;
-		tip.classList.add('show');
-		window.clearTimeout(tipTimer);
-		tipTimer = window.setTimeout(() => tip.classList.remove('show'), 2200);
-	}
-
-	document.addEventListener('contextmenu', (e) => {
-		if ((e.target as HTMLElement).closest('.slide')) {
-			e.preventDefault();
-			showTip(e.clientX, e.clientY);
-		}
-	});
-	// stop photos from being dragged out of the page onto the desktop
-	document.addEventListener('dragstart', (e) => {
-		if ((e.target as HTMLElement).closest('.slide')) e.preventDefault();
-	});
-</script>
 <style>
 	@media (prefers-reduced-motion: no-preference) {
 		:global(html) {
@@ -417,12 +437,21 @@ import Intro from '../components/Intro.astro';
 		right: 0;
 		height: 150vh;
 		z-index: 0;
+		overflow: hidden; /* keeps the zooming hero photo from spilling out below the fade */
 	}
 	.backgrounds,
 	.overlay,
 	.fade {
 		position: absolute;
 		inset: 0;
+	}
+	/* The photo and its shading fade out on their own just before the bottom edge.
+	   The slowly zooming photo can otherwise spill a few pixels past the fade and
+	   show as a thin line across the page below the hero. */
+	.backgrounds,
+	.overlay {
+		-webkit-mask-image: linear-gradient(to bottom, #000 85%, transparent 99%);
+		mask-image: linear-gradient(to bottom, #000 85%, transparent 99%);
 	}
 	.bg {
 		position: absolute;
@@ -469,7 +498,7 @@ import Intro from '../components/Intro.astro';
 	h1 {
 		font-size: clamp(3rem, 9vw, 6.5rem);
 		line-height: 1;
-		margin: 0 0 1.5rem;
+		margin: 0 0 2.5rem;
 		color: white;
 	}
 
@@ -495,11 +524,6 @@ import Intro from '../components/Intro.astro';
 			transition: none;
 			filter: none;
 		}
-	}
-
-	.tagline {
-		letter-spacing: 0.15em;
-		margin: 0 0 2rem;
 	}
 
 	/* View my work button: white fill sweeps in from the left on hover */
@@ -637,13 +661,30 @@ import Intro from '../components/Intro.astro';
 		white-space: nowrap;
 		transition: color 0.2s ease;
 	}
+	/* Phones: a little less letter spacing so "View all" fits beside the heading */
+	@media (max-width: 600px) {
+		.view-all {
+			font-size: 0.7rem;
+			letter-spacing: 0.18em;
+		}
+	}
 	.view-all:hover {
 		color: white;
 	}
+	/* Four category cards: one row on wide screens, 2 x 2 on medium screens,
+	   and a sideways-swipe row on phones (see the media queries below) */
 	.cards {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(4, 1fr);
 		gap: 1.5rem;
+	}
+	@media (max-width: 1200px) {
+		.cards {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.cards .card {
+			min-height: 440px;
+		}
 	}
 
 	/* The whole card is one link */
@@ -748,11 +789,27 @@ import Intro from '../components/Intro.astro';
 	}
 
 	@media (max-width: 900px) {
+		/* Phones: swipe sideways through the cards; the next one peeks in from the edge */
 		.cards {
-			grid-template-columns: 1fr;
+			grid-template-columns: none;
+			grid-auto-flow: column;
+			grid-auto-columns: 80%;
+			gap: 1rem;
+			overflow-x: auto;
+			scroll-snap-type: x mandatory;
+			overscroll-behavior-x: contain;
+			margin-inline: -6vw; /* run edge to edge... */
+			padding-inline: 6vw; /* ...while the first card still lines up with the heading */
+			scroll-padding-inline: 6vw;
+			padding-bottom: 0.5rem;
+			scrollbar-width: none;
+		}
+		.cards::-webkit-scrollbar {
+			display: none;
 		}
 		.card {
-			min-height: 420px;
+			min-height: 440px;
+			scroll-snap-align: start;
 		}
 	}
 		/* Featured photo: full width, with the picture drifting slowly behind the text */
@@ -1047,48 +1104,5 @@ import Intro from '../components/Intro.astro';
 	.closing .button:focus-visible {
 		color: var(--site-bg);
 	}	
-		/* Stops the Latest work photos from being dragged out or saved from the long-press menu */
-	.slide,
-	.slide img {
-		-webkit-user-drag: none;
-		-webkit-touch-callout: none;
-		user-select: none;
-	}
-
-	/* Copyright notice shown when someone right-clicks a photo */
-	.copyright-tip {
-		position: fixed;
-		z-index: 200;
-		padding: 0.7rem 1.1rem;
-		border-radius: 8px;
-		background: #1a1d24;
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-		color: white;
-		font-size: 0.9rem;
-		white-space: nowrap;
-		opacity: 0;
-		transform: translate(-50%, calc(-100% + 6px));
-		transition:
-			opacity 0.2s ease,
-			transform 0.2s ease;
-		pointer-events: none;
-	}
-	.copyright-tip::after {
-		content: '';
-		position: absolute;
-		top: 100%;
-		left: 50%;
-		transform: translateX(-50%);
-		border: 7px solid transparent;
-		border-top-color: #1a1d24;
-	}
-	.copyright-tip.show {
-		opacity: 1;
-		transform: translate(-50%, -100%);
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.copyright-tip {
-			transition: none;
-		}
-	}
+	/* Photo protection (right-click notice, no dragging) is site-wide: see PhotoGuard.astro */
 </style>

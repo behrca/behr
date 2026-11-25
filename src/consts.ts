@@ -2,4 +2,4 @@
 // You can import this data from anywhere in your site by using the `import` keyword.
 
 export const SITE_TITLE = "Behr Carey";
-export const SITE_DESCRIPTION = "Behr Carey";
+export const SITE_DESCRIPTION = "Nature, aviation, and wildlife photography by Behr Carey.";

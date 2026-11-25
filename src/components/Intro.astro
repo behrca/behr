@@ -54,6 +54,13 @@
 
   const intro = document.getElementById("bc-intro")!;
   const curtain = document.getElementById("bc-curtain")!;
+
+  // Tells the home page the intro is done, so the hero entrance can play
+  const revealHero = () => {
+    (window as any).heroRevealed = true;
+    window.dispatchEvent(new Event("hero:reveal"));
+  };
+
   const skip =
     sessionStorage.getItem("bc-intro-played") ||
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -61,27 +68,25 @@
   if (skip) {
     intro.classList.add("done");
     curtain.classList.add("done");
+    revealHero();
   } else {
     document.documentElement.style.overflow = "hidden";
     sessionStorage.setItem("bc-intro-played", "1");
 
-    // Part 1: the logo write-on. Change the number below to speed it up or slow it down.
+    // Part 1: Logo write-on
     const draw = gsap.timeline();
     draw.timeScale(3);
-    // B stem + top serif
+
     draw
       .to("#bc-s2", { strokeDashoffset: 0, duration: 0.25, ease: "none" }, 0.2)
       .to("#bc-s1", { strokeDashoffset: 0, duration: 0.7, ease: "power1.inOut" }, 0.2)
-      // upper bowl, then lower bowl
       .to("#bc-s3", { strokeDashoffset: 0, duration: 0.55, ease: "power1.inOut" }, ">-0.1")
       .to("#bc-s4", { strokeDashoffset: 0, duration: 0.7, ease: "power1.inOut" }, ">-0.1")
-      // lower-left sweep
       .to("#bc-s5", { strokeDashoffset: 0, duration: 0.5, ease: "power1.inOut" }, ">-0.1")
-      // the C: top arc, then lower arc
       .to("#bc-s0", { strokeDashoffset: 0, duration: 0.8, ease: "power1.inOut" }, ">-0.05")
       .to("#bc-s6", { strokeDashoffset: 0, duration: 0.8, ease: "power1.inOut" }, ">-0.1");
 
-    // Part 2: the transition into the page (plays at normal speed)
+    // Part 2: Transition into the page
     const tl = gsap.timeline({
       onComplete: () => {
         intro.classList.add("done");
@@ -91,23 +96,15 @@
     });
 
     tl.add(draw)
-      // white screen lifts, dark curtain follows it up
       .to("#bc-intro", { yPercent: -100, duration: 0.7, ease: "power3.inOut" }, "+=0.2")
       .to("#bc-curtain", { yPercent: -100, duration: 0.7, ease: "power3.inOut" }, "<+=0.14")
-      // hero photo settles from slightly zoomed in
       .fromTo(
         ".page-bg",
         { scale: 1.15, transformOrigin: "50% 0%" },
         { scale: 1, duration: 1.8, ease: "power2.out", clearProps: "transform" },
         "<+=0.2"
       )
-      // nav fades in, then hero text rises in one piece at a time
       .from("header", { opacity: 0, duration: 0.8, ease: "power1.out" }, "<+=0.3")
-      .from(
-        ".eyebrow, h1, .tagline, .button",
-        { y: 40, opacity: 0, duration: 0.9, stagger: 0.12, ease: "power3.out", clearProps: "transform" },
-        "<"
-      )
-      .from(".scroll-cue", { opacity: 0, duration: 0.8 }, ">-0.3");
+      .call(revealHero, [], "<+=0.2");
   }
 </script>
