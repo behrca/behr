@@ -1,4 +1,6 @@
 ---
+import { srcsetFor } from '../lib/responsive';
+
 // "Where I've shot" map on the home page.
 //
 // To add a place: copy one of the blocks below and change it.
@@ -184,7 +186,14 @@ const PLACEHOLDER_TILES = 3;
 											class="thumb"
 											href={`/gallery?photo=${ph.src.replace(/\.[^.]+$/, '')}`}
 										>
-											<img src={`/${ph.src}`} alt={ph.alt} loading="lazy" decoding="async" />
+											<img
+												src={`/${ph.src}`}
+												srcset={srcsetFor(`/${ph.src}`)}
+												sizes="140px"
+												alt={ph.alt}
+												loading="lazy"
+												decoding="async"
+											/>
 										</a>
 									))
 								: Array.from({ length: PLACEHOLDER_TILES }).map(() => (

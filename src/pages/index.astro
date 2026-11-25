@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import Intro from '../components/Intro.astro';
 import PhotoMap from '../components/PhotoMap.astro';
+import { srcsetFor } from '../lib/responsive';
 import '../styles/theme.css';
 ---
 
@@ -149,27 +150,27 @@ import '../styles/theme.css';
 				<div class="track-wrap">
 					<div class="track">
 						<a class="slide" href="/gallery?photo=hero-2">
-							<img src="/hero-2.jpg" alt="Whale spouts glowing in evening light" loading="lazy" decoding="async" />
+							<img src="/hero-2.jpg" srcset={srcsetFor('/hero-2.jpg')} sizes="(max-width: 600px) 80vw, 30vw" alt="Whale spouts glowing in evening light" loading="lazy" decoding="async" />
 							<span>Whale spouts</span>
 						</a>
 						<a class="slide" href="/gallery?photo=hero-3">
-							<img src="/hero-3.jpg" alt="Spray aircraft flying above corn fields." loading="lazy" decoding="async" />
+							<img src="/hero-3.jpg" srcset={srcsetFor('/hero-3.jpg')} sizes="(max-width: 600px) 80vw, 30vw" alt="Spray aircraft flying above corn fields." loading="lazy" decoding="async" />
 							<span>Crop Duster</span>
 						</a>
 						<a class="slide" href="/gallery?photo=hero">
-							<img src="/hero.jpg" alt="River running through a forested mountain valley" loading="lazy" decoding="async" />
+							<img src="/hero.jpg" srcset={srcsetFor('/hero.jpg')} sizes="(max-width: 600px) 80vw, 30vw" alt="River running through a forested mountain valley" loading="lazy" decoding="async" />
 							<span>River valley</span>
 						</a>
 						<a class="slide" href="/gallery?photo=hero-4">
-							<img src="/hero-4.jpg" alt="Passenger train on a cliffside track" loading="lazy" decoding="async" />
+							<img src="/hero-4.jpg" srcset={srcsetFor('/hero-4.jpg')} sizes="(max-width: 600px) 80vw, 30vw" alt="Passenger train on a cliffside track" loading="lazy" decoding="async" />
 							<span>Train on the cliff</span>
 						</a>
 						<a class="slide" href="/gallery?photo=wildlife">
-							<img src="/wildlife.jpg" alt="Wildlife photograph" loading="lazy" decoding="async" />
+							<img src="/wildlife.jpg" srcset={srcsetFor('/wildlife.jpg')} sizes="(max-width: 600px) 80vw, 30vw" alt="Wildlife photograph" loading="lazy" decoding="async" />
 							<span>Wildlife</span>
 						</a>
 						<a class="slide" href="/gallery?photo=nature">
-							<img src="/nature.jpg" alt="Nature photograph" loading="lazy" decoding="async" />
+							<img src="/nature.jpg" srcset={srcsetFor('/nature.jpg')} sizes="(max-width: 600px) 80vw, 30vw" alt="Nature photograph" loading="lazy" decoding="async" />
 							<span>Nature</span>
 						</a>
 					</div>

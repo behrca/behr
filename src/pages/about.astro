@@ -3,6 +3,7 @@ import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_TITLE } from '../consts';
+import { srcsetFor } from '../lib/responsive';
 import '../styles/theme.css';
 
 // ---------------------------------------------------------------------------
@@ -72,7 +73,13 @@ const closing = {
 					<p class="lead">{intro.lead}</p>
 				</div>
 				<div class="intro-photo">
-					<img src={intro.photo} alt={intro.photoAlt} decoding="async" />
+					<img
+						src={intro.photo}
+						srcset={srcsetFor(intro.photo)}
+						sizes="(max-width: 900px) 90vw, 40vw"
+						alt={intro.photoAlt}
+						decoding="async"
+					/>
 				</div>
 			</section>
 
@@ -101,7 +108,14 @@ const closing = {
 						focus.map((f) => (
 							<a class="focus-item" href={`/gallery?category=${f.title.toLowerCase()}`}>
 								<div class="focus-photo">
-									<img src={f.image} alt="" loading="lazy" decoding="async" />
+									<img
+										src={f.image}
+										srcset={srcsetFor(f.image)}
+										sizes="(max-width: 900px) 90vw, 30vw"
+										alt=""
+										loading="lazy"
+										decoding="async"
+									/>
 								</div>
 								<h3>{f.title}</h3>
 								<p>{f.text}</p>
